@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    %%[
+        var @emailAddress, @rows,  @rowCount, @row, @token, @expirationDate, @isUsed
+
+        set @emailAddress=RequestParameter('EmailAddress')
+        set @rows = LookupRows("Verification Tokens","EmailAddress", @emailAddress)
+        set @rowCount = rowCount(@rows)
+
+        IF @rowCount > 0 THEN
+
+            IF RequestParameter("submitted") == true THEN
+                /*sprawdz token i czy wazny i czy nie zuzyty*/   
+
+                set @row = row(@rows, 1)
+                set @token = field(@row, "Token")
+
+                IF (RequestParameter("VerificationCode") == @token) THEN
+                    set @expirationDate = field(@row, "ExpirationDate")
+
+                    IF (Now() <= @expirationDate) THEN
+                        set @isUsed = field(@row, "isUsed")
+
+                        IF (@isUsed == False) THEN 
+                            UpsertDE("Verification Tokens",1,"EmailAddress", @emailAddress, "IsUsed", "True")
+                            Redirect(CloudPagesURL(8262))
+                            ]%%
+                            <p>Success</p>
+                        %%[ ELSE ]%%
+                            <div class="errorWindow"><p class="errorTxt">The verification code has been used</p><a href="%%=RedirectTo(CloudPagesURL(8249,'emailAddress', @emailAddress))=%%">X</a></div>
+                        %%[ ENDIF
+                    ELSE ]%%
+                        <div class="errorWindow"><p class="errorTxt">The verification code has expired</p><a href="%%=RedirectTo(CloudPagesURL(8249,'emailAddress', @emailAddress))=%%">X</a></div>
+                    %%[ ENDIF
+                ELSE ]%%
+                    <div class="errorWindow"><p class="errorTxt">Incorrect verification code provided </p><a href="%%=RedirectTo(CloudPagesURL(8249,'emailAddress', @emailAddress))=%%">X</a></div>
+                %%[ ENDIF 
+            ENDIF
+        ELSE ]%%
+            <div class="errorWindow"><p class="errorTxt">No email provided</p></div>
+       %%[ ENDIF
+    ]%%
+    <style>
+        .errorWindow{
+            background-color:rgb(207, 11, 11);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding:0px 20px;
+        }
+        .errorTxt{
+            text-align: center;
+            width:100%;
+            font-size: 14px;
+            color:#fff;
+        }
+        .errorWindow a{
+            color:#fff;
+            text-decoration:none;
+        }
+        
+            body {
+              height:100vh;
+              width:100%;
+              font-family: sans-serif;
+              font-size:13px;
+              height: 100%;
+            }
+           
+            .container{
+              display:flex;
+              flex-direction: column;
+            }
+            
+      
+            label {
+              display:block;
+              padding-top:5px;
+            }
+            input[type="text"] {
+              display:block;
+      
+            }
+            fieldset {
+              border: 0;
+              padding:0;
+              margin:0;
+            }
+            h1, h2{
+              text-align:center;
+              color:#323030;
+              margin:20px;
+            }
+            h1{
+              margin-top:50px;
+              letter-spacing:2px;
+            }
+            form {
+              margin:10px auto 0 auto;
+              padding:20px;
+              width:400px;
+              height:auto;
+              overflow:hidden;
+              background-color:rgba(255, 255, 255, 0.7);
+              border-radius:10px;
+             }
+             
+             form label {
+              font-size:14px;
+              color:darkgray;
+              cursor:pointer;
+             }
+             
+             
+             
+             form input {
+              margin:15px 0;
+              padding:10px 10px;
+              width:100%;
+              outline:none;
+              border:1px solid #bbb;
+              border-radius:20px;
+              display:inline-block;
+              -webkit-box-sizing:border-box;
+                 -moz-box-sizing:border-box;
+                      box-sizing:border-box;
+                 -webkit-transition:0.2s ease all;
+                 -moz-transition:0.2s ease all;
+                  -ms-transition:0.2s ease all;
+                   -o-transition:0.2s ease all;
+                      transition:0.2s ease all;
+             }
+             
+             form input[type=text]:focus {
+              border-color:cornflowerblue;
+             }
+           
+             button{
+              border-radius:5px;
+              display:block;
+              margin:20px auto;
+              padding:15px 50px;
+              background:#1e8e3e;
+              border:none;
+              color:white;
+              cursor:pointer;
+              -webkit-transition:0.2s ease all;
+                 -moz-transition:0.2s ease all;
+                  -ms-transition:0.2s ease all;
+                   -o-transition:0.2s ease all;
+                      transition:0.2s ease all;
+             }
+             
+             button {
+              opacity:0.8;
+             }
+             
+             button:active {
+              opacity:0.4;
+             }
+    </style>
+</head>
+    <body>
+        <h1>AUTHENTICATION</h1>
+        <p>%%=v(@emailAddress)=%%</p>
+        <form method="post">
+            <fieldset>
+                <label for="VerificationCode">Verification code</label>
+                <input type="number" name="VerificationCode" required >
+            </fieldset>
+            <input name="submitted" type="hidden" value="true" />
+            <button type="submit">Next</button>
+        </form>
+    </body>
+</html>
