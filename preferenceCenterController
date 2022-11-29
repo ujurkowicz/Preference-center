@@ -1,13 +1,16 @@
 <script language="ampscript" runat="server">
 
     set @TOKEN_DE = 'Verification Tokens'
+    set @MDE = 'MDE'
       
-    VAR @page,
+    var @page,
     var @emailAddress,
     var @token,
     var @expirationDate,
     var @isUsed
-      
+
+    set @subscriberKey = AttributeValue('_subscriberkey')
+    /*set @subscriberKey = 'x'*/
     set @page=RequestParameter('page')
       
     IF (@page=='login') THEN
@@ -18,10 +21,10 @@
         UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
       
     ELSEIF (@page=='authentication') THEN
-        var  @rows,  @rowCount, @row, @expirationDate, @isUsed, @error
+        var  @rows,  @rowCount, @row, @error
 
         set @emailAddress=RequestParameter('EmailAddress')
-        set @rows = LookupRows("Verification Tokens","EmailAddress", @emailAddress)
+        set @rows = LookupRows(@TOKEN_DE,"EmailAddress", @emailAddress)
         set @rowCount = rowCount(@rows)
 
         IF @rowCount > 0 THEN
@@ -38,7 +41,7 @@
                     set @isUsed = field(@row, "isUsed")
 
                     IF (@isUsed == False) THEN 
-                        UpsertDE("Verification Tokens",1,"EmailAddress", @emailAddress, "IsUsed", "True")
+                        UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "IsUsed", "True")
 
                     ELSE
                            set @error= 'The verification code has been used'
@@ -54,7 +57,33 @@
         ENDIF
     ELSEIF (@page=='dataForm') THEN
     /*UKC-003C*/
-    
+    var @firstName, @lastName, @country, @phone, @region
+
+    set @emailAddress = RequestParameter('EmailAddress')
+    set @firstName = RequestParameter('firstName')
+    set @lastName = RequestParameter('lastName')
+    set @phone = RequestParameter('phone')
+    set @country = RequestParameter('country')
+    set @region = RequestParameter('region')
+
+    IF (@subscriberKey=='') THEN
+        /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
+        var @contactId
+        set @contactId = CreateSalesforceObject (
+            "Contact", 3,
+            "FirstName", @firstName,
+            "LastName", @lastName,
+            "Email", @emailAddress
+        )
+        set @subscriberKey= @contactId
+        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+    ELSE
+        /*UPSERT MDE*/
+        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+    ENDIF
+
     ELSEIF (@page=='subscriptionForm') THEN
     /*UKC -404*/
     ENDIF
@@ -64,12 +93,16 @@
             Platform.Load("core", "1");
             
             var page=Variable.GetValue("@page");
+            var token= Variable.GetValue("@token");
             var error=Variable.GetValue("@error");
             var email=Variable.GetValue("@emailAddress");
+            var subscriberKey=Variable.GetValue("@subscriberKey");
             var result= { 
-              Page: page, 
+              Page: page,
+              Token: token,
               Error: error,
-              Email: email
+              Email: email,
+              SubscriberKey: subscriberKey
               }
            stringifiedResult = Stringify(result);
           

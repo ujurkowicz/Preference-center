@@ -180,7 +180,8 @@
           var firstName = document.querySelector('#fname').value;
           var lastName = document.querySelector('#lname').value;
           var phone =  document.querySelector('input[type=phone]').value;
-          var region = document.querySelector('.region').value;
+          let region = document.querySelector('.region').value;
+          region = region == undefined ? '': region;
           console.log('Firstname ' + firstName);
           console.log('Lastname ' + lastName);
           console.log('Phone ' + phone);
@@ -196,7 +197,7 @@
                }
            };
            xhr.open('GET', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page='+page
-           +'&firstName='+'&lastName='+lastName+'&country='+country+'&phone='+phone+'&region='+ region+'&EmailAddress=' + email.value);
+           +'&firstName='+firstName+'&lastName='+lastName+'&country='+country+'&phone='+phone+'&region='+ region+'&EmailAddress=' + email.value);
            xhr.send();  
         }
   
