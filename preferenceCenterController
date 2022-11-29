@@ -1,0 +1,77 @@
+<script language="ampscript" runat="server">
+
+    set @TOKEN_DE = 'Verification Tokens'
+      
+    VAR @page,
+    var @emailAddress,
+    var @token,
+    var @expirationDate,
+    var @isUsed
+      
+    set @page=RequestParameter('page')
+      
+    IF (@page=='login') THEN
+        set @emailAddress=RequestParameter('EmailAddress')
+        set @token=random(100000,999999)
+        set @expirationDate=DateAdd(Now(), 1, "H")
+        set @isUsed=False
+        UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
+      
+    ELSEIF (@page=='authentication') THEN
+        var  @rows,  @rowCount, @row, @expirationDate, @isUsed, @error
+
+        set @emailAddress=RequestParameter('EmailAddress')
+        set @rows = LookupRows("Verification Tokens","EmailAddress", @emailAddress)
+        set @rowCount = rowCount(@rows)
+
+        IF @rowCount > 0 THEN
+
+            /*sprawdz token i czy wazny i czy nie zuzyty*/   
+
+            set @row = row(@rows, 1)
+            set @token = field(@row, "Token")
+
+            IF (RequestParameter("token") == @token) THEN
+                set @expirationDate = field(@row, "ExpirationDate")
+
+                IF (Now() <= @expirationDate) THEN
+                    set @isUsed = field(@row, "isUsed")
+
+                    IF (@isUsed == False) THEN 
+                        UpsertDE("Verification Tokens",1,"EmailAddress", @emailAddress, "IsUsed", "True")
+
+                    ELSE
+                           set @error= 'The verification code has been used'
+                    ENDIF
+                ELSE 
+                    set @error = 'The verification code has expired'
+                ENDIF
+            ELSE 
+                set @error = 'Incorrect verification code provided'
+            ENDIF 
+        ELSE 
+            set @error = 'No email provided'
+        ENDIF
+    ELSEIF (@page=='dataForm') THEN
+    /*UKC-003C*/
+    
+    ELSEIF (@page=='subscriptionForm') THEN
+    /*UKC -404*/
+    ENDIF
+
+</script>
+<script type="text/javascript" runat="server">
+            Platform.Load("core", "1");
+            
+            var page=Variable.GetValue("@page");
+            var error=Variable.GetValue("@error");
+            var email=Variable.GetValue("@emailAddress");
+            var result= { 
+              Page: page, 
+              Error: error,
+              Email: email
+              }
+           stringifiedResult = Stringify(result);
+          
+</script>
+<ctrl:var name=stringifiedResult />
