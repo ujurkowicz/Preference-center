@@ -2,6 +2,7 @@
 
     set @TOKEN_DE = 'Verification Tokens'
     set @MDE = 'MDE'
+    set @PREFERENCE_AREAS_DE= 'Preference Areas'
       
     var @page,
     var @emailAddress,
@@ -9,7 +10,6 @@
     var @expirationDate,
     var @isUsed
 
-    set @subscriberKey = AttributeValue('_subscriberkey')
     /*set @subscriberKey = 'x'*/
     set @page=RequestParameter('page')
       
@@ -56,33 +56,38 @@
             set @error = 'No email provided'
         ENDIF
     ELSEIF (@page=='dataForm') THEN
+        IF isNull(@subscriberKey) THEN
+            set @subscriberKey = AttributeValue('_subscriberkey')
+        ENDIF
     /*UKC-003C*/
-    var @firstName, @lastName, @country, @phone, @region
+        var @firstName, @lastName, @country, @phone, @region
 
-    set @emailAddress = RequestParameter('EmailAddress')
-    set @firstName = RequestParameter('firstName')
-    set @lastName = RequestParameter('lastName')
-    set @phone = RequestParameter('phone')
-    set @country = RequestParameter('country')
-    set @region = RequestParameter('region')
+        set @emailAddress = RequestParameter('EmailAddress')
+        set @firstName = RequestParameter('firstName')
+        set @lastName = RequestParameter('lastName')
+        set @phone = RequestParameter('phone')
+        set @country = RequestParameter('country')
+        set @region = RequestParameter('region')
 
-    IF (@subscriberKey=='') THEN
-        /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
-        var @contactId
-        set @contactId = CreateSalesforceObject (
-            "Contact", 3,
-            "FirstName", @firstName,
-            "LastName", @lastName,
-            "Email", @emailAddress
-        )
-        set @subscriberKey= @contactId
-        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
-        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
-    ELSE
-        /*UPSERT MDE*/
-        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
-        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
-    ENDIF
+        IF (@subscriberKey=='') THEN
+            /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
+            var @subscriberKey
+            set @subscriberKey = CreateSalesforceObject (
+                "Contact", 3,
+                "FirstName", @firstName,
+                "LastName", @lastName,
+                "Email", @emailAddress
+            )
+            UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+            'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+        ELSE
+            /*UPSERT MDE*/
+            UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+            'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+        ENDIF
+        /*GET RECORDS FROM PREFERRENCE AREAS AND NOTIFICATION DE*/
+        var @id, var @area, var @description
+
 
     ELSEIF (@page=='subscriptionForm') THEN
     /*UKC -404*/
@@ -90,21 +95,32 @@
 
 </script>
 <script type="text/javascript" runat="server">
-            Platform.Load("core", "1");
+    var PREFERNCE_AREAS_DE_EK='A8AAE3B1-9927-477E-AFC5-51D98774F723';
+    var NOTIFICATIONS_DE_EK='FE5B10AD-4155-4087-99CF-3B2D932C8F56';
+    
+    Platform.Load("core", "1");
             
-            var page=Variable.GetValue("@page");
-            var token= Variable.GetValue("@token");
-            var error=Variable.GetValue("@error");
-            var email=Variable.GetValue("@emailAddress");
-            var subscriberKey=Variable.GetValue("@subscriberKey");
-            var result= { 
-              Page: page,
-              Token: token,
-              Error: error,
-              Email: email,
-              SubscriberKey: subscriberKey
-              }
-           stringifiedResult = Stringify(result);
+    var page = Variable.GetValue("@page");
+    var token = Variable.GetValue("@token");
+    var error = Variable.GetValue("@error");
+    var email = Variable.GetValue("@emailAddress");
+    var subscriberKey = Variable.GetValue("@subscriberKey");
+
+    var preferenceAreasDE = DataExtension.Init(PREFERNCE_AREAS_DE_EK);
+    var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
+    var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
+    var notifications = notificationsDE.Rows.Retrieve();
+
+    var result= { 
+        Page: page,
+        Token: token,
+        Error: error,
+        Email: email,
+        SubscriberKey: subscriberKey,
+        PreferenceAreas: preferenceAreas,
+        Notifications: notifications
+        }
+    stringifiedResult = Stringify(result);
           
 </script>
 <ctrl:var name=stringifiedResult />

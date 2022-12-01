@@ -1,80 +1,81 @@
 <html>
-    <head>
-      <link rel="stylesheet" href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr">
-    </head>
-    <body>
-
-      <!-- LOGIN  -->
-      <div class="login">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr"
+    />
+  </head>
+  <body>
+    <!-- LOGIN  -->
+    <div class="login">
       <h1>LOG IN</h1>
       <div class="container">
-       
-        <form id="form1" method="post" >
-         <fieldset>
-          <!--
+        <form id="form1" method="post">
+          <fieldset>
+            <!--
           <input type="hidden" name="SubscriberKey" value="%%=v(@SubscriberKey)=%%">>
           action="%%=RedirectTo(CloudPagesURL(8249))=%%"-->
-          <label for="Email Address">Email Address</label>
-          <input type="email" name="EmailAddress" required>
-
-         </fieldset>
-         <input name="submitted" type="hidden" value="true" />
-         <button type="submit">Next</button>
-
+            <label for="Email Address">Email Address</label>
+            <input type="email" name="EmailAddress" required />
+          </fieldset>
+          <input name="submitted" type="hidden" value="true" />
+          <button type="submit">Next</button>
         </form>
       </div>
     </div>
 
-     <!--AUTHENTICATION -->
-     <div class="authentication hidden">
-      <div class="hidden errorWindow"><p class="errorTxt">Error has occured</p><a href="#">X</a></div>
-    <h1>AUTHENTICATION</h1>
-        <p>%%=v(@emailAddress)=%%</p>
-        <form id="form2" method="post">
-            <fieldset>
-                <label for="VerificationCode">Verification code</label>
-                <input id="token" type="number" name="VerificationCode" required >
-            </fieldset>
-            <input name="submitted" type="hidden" value="true" />
-            <button type="submit">Next</button>
-        </form>
+    <!--AUTHENTICATION -->
+    <div class="authentication hidden">
+      <div class="hidden errorWindow">
+        <p class="errorTxt">Error has occured</p>
+        <a href="#">X</a>
       </div>
+      <h1>AUTHENTICATION</h1>
+      <p>%%=v(@emailAddress)=%%</p>
+      <form id="form2" method="post">
+        <fieldset>
+          <label for="VerificationCode">Verification code</label>
+          <input id="token" type="number" name="VerificationCode" required />
+        </fieldset>
+        <input name="submitted" type="hidden" value="true" />
+        <button type="submit">Next</button>
+      </form>
+    </div>
 
-     <!--PERSONAL DATA FORM --> 
-     <div class="dataForm hidden">
+    <!--PERSONAL DATA FORM -->
+    <div class="dataForm hidden">
       <h1>PERSONAL DATA FORM</h1>
-       
-        <form id="form3" method="post">
 
-         <fieldset>
+      <form id="form3" method="post">
+        <fieldset>
           <label for="FirstName">First Name*</label>
-          <input type="text" name="FirstName" id="fname" required>
-         </fieldset>
+          <input type="text" name="FirstName" id="fname" required />
+        </fieldset>
 
-         <fieldset>
+        <fieldset>
           <label for="LastName">Last Name*</label>
-          <input type="text" name="LastName" id="lname" required>
-         </fieldset>
-         
-         <fieldset>
-          <label for="Phone">Phone</label>
-          <input type="phone" name="Phone">
-         </fieldset>
+          <input type="text" name="LastName" id="lname" required />
+        </fieldset>
 
-         <fieldset>
+        <fieldset>
+          <label for="Phone">Phone</label>
+          <input type="phone" name="Phone" />
+        </fieldset>
+
+        <fieldset>
           <label for="Country" id="country">Country*</label>
           <select name="Country" onchange="getCountry()">
-              <option value="anglia" >Anglia</option>
-              <option value="belgia">Belgia</option>
-              <option value="chorwacja">Chorwacja</option>
-              <option value="polska">Polska</option>
+            <option value="anglia">Anglia</option>
+            <option value="belgia">Belgia</option>
+            <option value="chorwacja">Chorwacja</option>
+            <option value="polska">Polska</option>
           </select>
-         </fieldset>
-     
-         <fieldset class="hidden region">
+        </fieldset>
+
+        <fieldset class="hidden region">
           <label for="Region">Region</label>
           <select name="Region">
-            <option value="dolnoslaskie" >Dolnośląskie</option>
+            <option value="dolnoslaskie">Dolnośląskie</option>
             <option value="kujawsko-pomorskie">Kujawsko-pomorskie</option>
             <option value="lubelskie">Lubelskie</option>
             <option value="lubuskie">Lubuskie</option>
@@ -90,117 +91,210 @@
             <option value="warminsko-mazurskie">Warmińsko-mazurskie</option>
             <option value="wielkopolskie">Wielkopolskie</option>
             <option value="zachodniopomorskie">Zachodniopomorskie</option>
-        </select>
-         </fieldset>
+          </select>
+        </fieldset>
 
-         <input name="submitted" type="hidden" value="true" />
-         <button type="submit">Next</button>
+        <input name="submitted" type="hidden" value="true" />
+        <button type="submit">Next</button>
+      </form>
+    </div>
 
-        </form>
+    <!--SUBSCRIPTION FORM -->
+    <div class="subscriptionForm hidden">
+      <form id="form4">
+        <h2>What are your area of interests?</h2>
+        <fieldset>
+          <div class="preferences">
+          </div>
+        </fieldset>
+        <h2>What kind of the notifications do you want to get?</h2>
+        <fieldset>
+          <div class="notifications">
+          </div>
+        </fieldset>
+        <div class="btns-container">
+          <button id="back">Back</button>
+          <input name="submitted" type="hidden" value="true" />
+          <button type="submit">Next</button>
         </div>
+      </form>
+    </div>
 
-      <script type="text/javascript">
-        let form1 = document.querySelector('#form1');
-        form1.addEventListener("submit", emailSubmit, false);
+    <script type="text/javascript">
+      let form1 = document.querySelector("#form1");
+      form1.addEventListener("submit", emailSubmit, false);
 
-        let form2 = document.querySelector('#form2');
-        form2.addEventListener("submit", tokenSubmit, false);
-        var email = document.querySelector('input[type=email]');
+      let form2 = document.querySelector("#form2");
+      form2.addEventListener("submit", tokenSubmit, false);
+      var email = document.querySelector("input[type=email]");
 
-        let form3 = document.querySelector('#form3');
-        form3.addEventListener("submit", dataFormSubmit, false);
+      let form3 = document.querySelector("#form3");
+      form3.addEventListener("submit", dataFormSubmit, false);
 
-        function emailSubmit(e){
-          e.preventDefault();
-          console.log(email.value);
-          var page='login';
-          var xhr = new XMLHttpRequest();
-          xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              var response = JSON.parse(xhr.response);
-              console.log(response);
-              var authentication = document.querySelector('.authentication');
-              var login = document.querySelector('.login');
-              login.classList.add('hidden');
-              authentication.classList.remove('hidden');
-            } else {
-              alert('The request failed!');
-            }
-          };
-          xhr.open('POST', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?EmailAddress=' + email.value+'&page='+page); 
-          xhr.send();
-        }
+      let backBtn = document.querySelector("#back");
+      backBtn.addEventListener("click", backtoDataForm, false);
 
-        function tokenSubmit(e){
-          e.preventDefault();
-          var token = document.querySelector('#token');
-          console.log(token.value);
-          var page='authentication';
-          var xhr = new XMLHttpRequest();
-          xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              var response = JSON.parse(xhr.response);
-              console.log(response);
-              if (response["Error"] == null) {
-                var authentication = document.querySelector('.authentication');
-                var dataForm = document.querySelector('.dataForm');
-                authentication.classList.add('hidden');
-                dataForm.classList.remove('hidden');
-              }
-              else {
-                var errorWindow = document.querySelector('.errorWindow');
-                errorWindow.classList.remove('hidden');
-                var errorTxt = document.querySelector('.errorTxt');
-                errorTxt.innerHTML =response["Error"];
-              }
+      let form4 = document.querySelector("#form4");
+      backBtn.addEventListener("submit", subFormSubmit, false);
 
-            } else {
-              alert('The request failed!');
-            }
-          };
-          xhr.open('POST', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?token=' + token.value+'&page='+page+'&EmailAddress=' + email.value); 
-          xhr.send();
-        }
-
-        function getCountry() {
-          var country = document.querySelector('select').value;
-          if (country=='polska') {
-            document.querySelector('.region').classList.remove("hidden");
+      function emailSubmit(e) {
+        e.preventDefault();
+        console.log(email.value);
+        var page = "login";
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            var authentication = document.querySelector(".authentication");
+            var login = document.querySelector(".login");
+            login.classList.add("hidden");
+            authentication.classList.remove("hidden");
+          } else {
+            alert("The request failed!");
           }
-          else if (!document.querySelector('.region').classList.contains("hidden")){
-           document.querySelector('.region').classList.add("hidden");
-          }
-          return country;
-        }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?EmailAddress=" +
+            email.value +
+            "&page=" +
+            page
+        );
+        xhr.send();
+      }
 
-        function dataFormSubmit(e){
-          e.preventDefault();
-          var page='dataForm';
-          var country = getCountry();
-          var firstName = document.querySelector('#fname').value;
-          var lastName = document.querySelector('#lname').value;
-          var phone =  document.querySelector('input[type=phone]').value;
-          let region = document.querySelector('.region').value;
-          region = region == undefined ? '': region;
-          console.log('Firstname ' + firstName);
-          console.log('Lastname ' + lastName);
-          console.log('Phone ' + phone);
-          console.log('Country ' + country);
-          console.log('Region ' + region);
-          var xhr = new XMLHttpRequest();
-           xhr.onload = function () {
-               if (xhr.status >= 200 && xhr.status < 300) {
-                   var response = JSON.parse(xhr.response);
-                   console.log(response);
-               } else {
-                   alert('The request failed!');
-               }
-           };
-           xhr.open('GET', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page='+page
-           +'&firstName='+firstName+'&lastName='+lastName+'&country='+country+'&phone='+phone+'&region='+ region+'&EmailAddress=' + email.value);
-           xhr.send();  
+      function tokenSubmit(e) {
+        e.preventDefault();
+        var token = document.querySelector("#token");
+        console.log(token.value);
+        var page = "authentication";
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            if (response["Error"] == null) {
+              var authentication = document.querySelector(".authentication");
+              var dataForm = document.querySelector(".dataForm");
+              authentication.classList.add("hidden");
+              dataForm.classList.remove("hidden");
+            } else {
+              var errorWindow = document.querySelector(".errorWindow");
+              errorWindow.classList.remove("hidden");
+              var errorTxt = document.querySelector(".errorTxt");
+              errorTxt.innerHTML = response["Error"];
+            }
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?token=" +
+            token.value +
+            "&page=" +
+            page +
+            "&EmailAddress=" +
+            email.value
+        );
+        xhr.send();
+      }
+
+      function getCountry() {
+        var country = document.querySelector("select").value;
+        if (country == "polska") {
+          document.querySelector(".region").classList.remove("hidden");
+        } else if (
+          !document.querySelector(".region").classList.contains("hidden")
+        ) {
+          document.querySelector(".region").classList.add("hidden");
         }
-  
-      </script>
-    </body>
+        return country;
+      }
+
+      function dataFormSubmit(e) {
+        e.preventDefault();
+        var page = "dataForm";
+        var country = getCountry();
+        var firstName = document.querySelector("#fname").value;
+        var lastName = document.querySelector("#lname").value;
+        var phone = document.querySelector("input[type=phone]").value;
+        let region = document.querySelector(".region").value;
+        region = region == undefined ? "" : region;
+        console.log("Firstname " + firstName);
+        console.log("Lastname " + lastName);
+        console.log("Phone " + phone);
+        console.log("Country " + country);
+        console.log("Region " + region);
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            var subForm = document.querySelector(".subscriptionForm");
+            var dataForm = document.querySelector(".dataForm");
+            dataForm.classList.add("hidden");
+            subForm.classList.remove("hidden");
+            showPreferences(response.PreferenceAreas);
+            showNotifications(response.Notifications);
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "GET",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+            page +
+            "&firstName=" +
+            firstName +
+            "&lastName=" +
+            lastName +
+            "&country=" +
+            country +
+            "&phone=" +
+            phone +
+            "&region=" +
+            region +
+            "&EmailAddress=" +
+            email.value
+        );
+        xhr.send();
+      }
+      
+      function showPreferences(prefArr){
+        let preferences = document.querySelector('.preferences');
+        preferences.innerHTML='';
+        for (let i=0; i<prefArr.length; i++) {
+          let pref="pref"+(i+1).toString();
+          preferences.innerHTML+=`<input type="checkbox" id=${pref} name=${pref}/><label for=${pref}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
+          
+        }
+      }
+
+      function showNotifications(notArr){
+        let notifications = document.querySelector('.notifications');
+        notifications.innerHTML='';
+        for (let i=0; i<notArr.length; i++) {
+          let not="not"+(i+1).toString();
+          notifications.innerHTML+=`<div><input type="checkbox" id=${not} name=${not}/><label for=${not}>`+notArr[i].Notification+'</label></div>';
+          
+        }
+      }
+
+      function backtoDataForm(e) {
+        e.preventDefault();
+        var subForm = document.querySelector(".subscriptionForm");
+        var dataForm = document.querySelector(".dataForm");
+        subForm.classList.add("hidden");
+        dataForm.classList.remove("hidden");
+      }
+
+      function subFormSubmit(e) {
+        e.preventDefault();
+        var page = "subscriptionForm";
+
+      }
+    </script>
+  </body>
 </html>

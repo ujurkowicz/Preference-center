@@ -125,3 +125,24 @@ select {
   background-position: right 0.7rem top 50%;
   background-size: 0.65rem auto;
  }
+ .btns-container {
+  display:flex;
+ }
+ input[type="checkbox"] {
+  width:auto;
+ }
+ #back {
+  background:#505251;
+ }
+ .preferences label, .notifications label {
+  display: inline-block;
+  margin-left:20px;
+  font-size:16px;
+  color: #323030;
+ }
+ .preferences p, .notifications p {
+  color: darkgray;
+ }
+ .notifications, .preferences {
+  margin: 20px auto;
+ }
