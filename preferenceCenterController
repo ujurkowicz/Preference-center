@@ -1,16 +1,19 @@
-<script language="ampscript" runat="server">
+%%[
 
-    set @TOKEN_DE = 'Verification Tokens'
+set @TOKEN_DE = 'Verification Tokens'
     set @MDE = 'MDE'
     set @PREFERENCE_AREAS_DE= 'Preference Areas'
+    set @CONSENTS_DE = 'Consents'
       
     var @page,
     var @emailAddress,
     var @token,
     var @expirationDate,
-    var @isUsed
+    var @isUsed,
+    var @subscriberKey
 
-    /*set @subscriberKey = 'x'*/
+    /*set @subscriberKey = '0037Q00000UvtC6QAJ'*/
+    /*set @subscriberKey = AttributeValue('_subscriberkey')*/
     set @page=RequestParameter('page')
       
     IF (@page=='login') THEN
@@ -56,9 +59,7 @@
             set @error = 'No email provided'
         ENDIF
     ELSEIF (@page=='dataForm') THEN
-        IF isNull(@subscriberKey) THEN
-            set @subscriberKey = AttributeValue('_subscriberkey')
-        ENDIF
+        set @subscriberKey = AttributeValue('_subscriberkey')
     /*UKC-003C*/
         var @firstName, @lastName, @country, @phone, @region
 
@@ -69,34 +70,50 @@
         set @country = RequestParameter('country')
         set @region = RequestParameter('region')
 
-        IF (@subscriberKey=='') THEN
-            /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
-            var @subscriberKey
-            set @subscriberKey = CreateSalesforceObject (
-                "Contact", 3,
-                "FirstName", @firstName,
-                "LastName", @lastName,
-                "Email", @emailAddress
-            )
-            UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
-            'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
-        ELSE
-            /*UPSERT MDE*/
-            UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
-            'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+        IF (@subscriberKey == '') THEN
+            set @subscriberKey = RequestParameter('SubscriberKey')
+            IF (@subscriberKey == 'undefined') THEN
+                /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
+                set @subscriberKey = CreateSalesforceObject (
+                    "Contact", 3,
+                    "FirstName", @firstName,
+                    "LastName", @lastName,
+                    "Email", @emailAddress
+                )
+
+        /*    var  @rows, @rowCount
+            set @rows = LookupRows(@CONSENTS_DE,'SubscriberKey', @subscriberKey)
+            set @rowCount = rowCount(@rows)
+            IF @rowCount > 0 THEN*/
+            /*TYPE PREFERNCE AREAS ZNAJDZ ID PREF AREA*/
+            /*    FOR @counter = 1 TO @rowCount DO  
+                    set @row = row(@rows, @counter)  
+                    set @type = field(@row,"Type")
+                    IF @type == 'Preference Area' THEN
+                        set @checkedPrefrenceAreaIds = field(@row,"PrefernceAreaId")+','
+                    ELSEIF @type == 'Notification' THEN
+                        set @checkedNotificationIds = field(@row, "Notification")+','
+                    ENDIF
+                NEXT @counter 
+            ENDIF */
+            ENDIF
         ENDIF
-        /*GET RECORDS FROM PREFERRENCE AREAS AND NOTIFICATION DE*/
-        var @id, var @area, var @description
+        /*UPSERT MDE*/
+        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
 
 
     ELSEIF (@page=='subscriptionForm') THEN
-    /*UKC -404*/
+    /*UKC -004*/
+    
+
     ENDIF
 
-</script>
+]%%
 <script type="text/javascript" runat="server">
-    var PREFERNCE_AREAS_DE_EK='A8AAE3B1-9927-477E-AFC5-51D98774F723';
-    var NOTIFICATIONS_DE_EK='FE5B10AD-4155-4087-99CF-3B2D932C8F56';
+    var PREFERNCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
+    var NOTIFICATIONS_DE_EK = 'FE5B10AD-4155-4087-99CF-3B2D932C8F56';
+    var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
     
     Platform.Load("core", "1");
             
@@ -106,10 +123,36 @@
     var email = Variable.GetValue("@emailAddress");
     var subscriberKey = Variable.GetValue("@subscriberKey");
 
-    var preferenceAreasDE = DataExtension.Init(PREFERNCE_AREAS_DE_EK);
-    var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
-    var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
-    var notifications = notificationsDE.Rows.Retrieve();
+    if (page=='dataForm') {
+        var preferenceAreasDE = DataExtension.Init(PREFERNCE_AREAS_DE_EK);
+        var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
+        var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
+        var notifications = notificationsDE.Rows.Retrieve();
+        var checkedPreferenceAreas = getCheckedConsents("PreferenceArea");
+        var checkedNotifications = getCheckedConsents("Notification");
+        
+    }
+    function getCheckedConsents(assetType){
+        var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
+
+        var filter1 = {
+            Property: "SubscriberKey",
+            SimpleOperator: "equals",
+            Value: subscriberKey
+        }
+        
+        var complexFilter = {
+            LeftOperand: filter1,
+            LogicalOperator: "AND",
+            RightOperand: {
+                Property: "Type",
+                SimpleOperator: "equals",
+                Value: assetType
+            } 
+        }
+        return consentsDE.Rows.Retrieve(complexFilter);
+
+    }
 
     var result= { 
         Page: page,
@@ -118,7 +161,9 @@
         Email: email,
         SubscriberKey: subscriberKey,
         PreferenceAreas: preferenceAreas,
-        Notifications: notifications
+        Notifications: notifications,
+        CheckedPreferenceAreas: checkedPreferenceAreas,
+        CheckedNotifications: checkedNotifications
         }
     stringifiedResult = Stringify(result);
           

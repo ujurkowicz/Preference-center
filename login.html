@@ -93,7 +93,6 @@
             <option value="zachodniopomorskie">Zachodniopomorskie</option>
           </select>
         </fieldset>
-
         <input name="submitted" type="hidden" value="true" />
         <button type="submit">Next</button>
       </form>
@@ -137,6 +136,7 @@
       let form4 = document.querySelector("#form4");
       backBtn.addEventListener("submit", subFormSubmit, false);
 
+      var subscriberKey;
       function emailSubmit(e) {
         e.preventDefault();
         console.log(email.value);
@@ -232,12 +232,16 @@
           if (xhr.status >= 200 && xhr.status < 300) {
             var response = JSON.parse(xhr.response);
             console.log(response);
+
             var subForm = document.querySelector(".subscriptionForm");
             var dataForm = document.querySelector(".dataForm");
             dataForm.classList.add("hidden");
             subForm.classList.remove("hidden");
-            showPreferences(response.PreferenceAreas);
-            showNotifications(response.Notifications);
+
+            showPreferences(response.PreferenceAreas, response.CheckedPreferenceAreas);
+            showNotifications(response.Notifications, response.CheckedNotifications);
+            subscriberKey=response.SubscriberKey;
+            console.log(subscriberKey);
           } else {
             alert("The request failed!");
           }
@@ -257,27 +261,55 @@
             "&region=" +
             region +
             "&EmailAddress=" +
-            email.value
+            email.value +
+            "&SubscriberKey=" +
+            subscriberKey
         );
         xhr.send();
       }
       
-      function showPreferences(prefArr){
+      function showPreferences(prefArr, checkedPrefArr){
         let preferences = document.querySelector('.preferences');
         preferences.innerHTML='';
         for (let i=0; i<prefArr.length; i++) {
-          let pref="pref"+(i+1).toString();
-          preferences.innerHTML+=`<input type="checkbox" id=${pref} name=${pref}/><label for=${pref}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
+          let prefId='p'+prefArr[i].Id;
+          let pref = "pref"+(i+1).toString();
+          let checked=false;
+          for (let j=0; j<checkedPrefArr.length; j++) {
+            console.log('in checked array');
+            console.log(checkedPrefArr[j].AreaId);
+            if (prefArr[i].Id==checkedPrefArr[j].AreaId) {
+               checked = true;
+               console.log('consent found');
+              break;
+            }
+          }
+          preferences.innerHTML+=checked?
+         `<input type="checkbox" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>':
+         `<input type="checkbox" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
           
         }
       }
 
-      function showNotifications(notArr){
+      function showNotifications(notArr, checkedNotArr){
         let notifications = document.querySelector('.notifications');
         notifications.innerHTML='';
         for (let i=0; i<notArr.length; i++) {
+          console.log('in notification arr');
+          let notId='n'+notArr[i].Id;
           let not="not"+(i+1).toString();
-          notifications.innerHTML+=`<div><input type="checkbox" id=${not} name=${not}/><label for=${not}>`+notArr[i].Notification+'</label></div>';
+          let checked=false;
+          for (let j=0; j<checkedNotArr.length; j++) {
+            console.log('in checked array');
+            if (notArr[i].Id==checkedNotArr[j].NotificationId) {
+               checked = true;
+               console.log('consent found');
+              break;
+            }
+          }
+          notifications.innerHTML+=checked?
+          `<div><input type="checkbox" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Notification+'</label></div>':
+          `<div><input type="checkbox" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Notification+'</label></div>';
           
         }
       }
