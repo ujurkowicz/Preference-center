@@ -26,9 +26,9 @@
 
     <!--AUTHENTICATION -->
     <div class="authentication hidden">
-      <div id="errorWindow" class="hidden errorWindow"> <!-- DK: Tutaj dodałem id żeby można było namierzyć ErrorDiv w JSie i go ukryć -->
+      <div id="errorWindow" class="hidden errorWindow">
         <p class="errorTxt">Error has occured</p>
-        <a style="cursor: pointer" onclick="hideErrorWindow()">X</a> <!-- DK: Przycisk ukrywający ErrorDiv -->
+        <a style="cursor: pointer" onclick="hideErrorWindow()">X</a>
       </div>
       <h1>AUTHENTICATION</h1>
       <p>%%=v(@emailAddress)=%%</p>
@@ -60,7 +60,7 @@
         <fieldset>
           <label for="Phone">Phone</label>
           <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{10,13}" required
-           oninvalid="this.setCustomValidity('Please enter a phone number')"> <!-- DK: Walidacja nr tel. Długość nr musi być pomiędzy 10 a 13 cyfr. Można to zmienić edytując wartości w otwartych klamrach :) -->
+           oninvalid="this.setCustomValidity('Please enter a phone number')">
         </fieldset>
 
         <fieldset>
@@ -117,6 +117,23 @@
           <input name="submitted" type="hidden" value="true" />
           <button type="submit">Next</button>
         </div>
+      </form>
+    </div>
+
+    <!--MARKETING CONSENT FORM-->
+    <div class="dataForm hidden">
+      <h1>MARKETING CONSENT FORM</h1>
+      <form id="form5" method="post">
+        <div style="margin-bottom: 25px;">
+          <input type="checkbox" id="marketingConsent1" name="marketingConsent1" value="marketingConsent1" required style="display: inline-block; margin-top: 7px;">
+          <label for="marketingConsent1" style="display: inline-block; width: 340px; vertical-align: top; margin-left: 10px; line-height: 1rem;"> I have read and understood the Privacy Notice containing information about the processing of my personal data, which is part of my consent given below. I consent to the processing of my personal data (to the extent described in the Privacy Notice) for marketing purposes.</label><br>
+        </div>
+        <div style="margin-bottom: 25px;">
+          <input type="checkbox" id="marketingConsent2" name="marketingConsent2" value="marketingConsent2" required style="display: inline-block; margin-top: 7px;">
+          <label for="marketingConsent2" style="display: inline-block; width: 340px; vertical-align: top; margin-left: 10px; line-height: 1rem;"> I consent to the processing of my personal data (to the extent described in the Privacy Notice) for direct marketing purposes.</label><br>
+        </div>
+        <input name="submitted" type="hidden" value="true" />
+        <button type="submit">Next</button>
       </form>
     </div>
 
@@ -375,8 +392,6 @@
         var errorTxt = document.querySelector(".errorTxt");
         errorTxt.innerHTML = err;
       }
-
-      // DK: Funkcja ukrywająca ErrorDiv
 
       function hideErrorWindow() {
         document.getElementById("errorWindow").classList.add('hidden');
