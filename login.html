@@ -134,9 +134,10 @@
       backBtn.addEventListener("click", backtoDataForm, false);
 
       let form4 = document.querySelector("#form4");
-      backBtn.addEventListener("submit", subFormSubmit, false);
+      form4.addEventListener("submit", subFormSubmit, false);
 
       var subscriberKey;
+
       function emailSubmit(e) {
         e.preventDefault();
         console.log(email.value);
@@ -180,10 +181,7 @@
               authentication.classList.add("hidden");
               dataForm.classList.remove("hidden");
             } else {
-              var errorWindow = document.querySelector(".errorWindow");
-              errorWindow.classList.remove("hidden");
-              var errorTxt = document.querySelector(".errorTxt");
-              errorTxt.innerHTML = response["Error"];
+              showError(response["Error"]);
             }
           } else {
             alert("The request failed!");
@@ -238,8 +236,10 @@
             dataForm.classList.add("hidden");
             subForm.classList.remove("hidden");
 
-            showPreferences(response.PreferenceAreas, response.CheckedPreferenceAreas);
-            showNotifications(response.Notifications, response.CheckedNotifications);
+            let previousPrefAreas=response.CheckedPreferenceAreas;
+            let previousNotifications = response.CheckedNotifications;
+            showPreferences(response.PreferenceAreas, previousPrefAreas);
+            showNotifications(response.Notifications, previousNotifications);
             subscriberKey=response.SubscriberKey;
             console.log(subscriberKey);
           } else {
@@ -285,8 +285,8 @@
             }
           }
           preferences.innerHTML+=checked?
-         `<input type="checkbox" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>':
-         `<input type="checkbox" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>':
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
           
         }
       }
@@ -308,8 +308,8 @@
             }
           }
           notifications.innerHTML+=checked?
-          `<div><input type="checkbox" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Notification+'</label></div>':
-          `<div><input type="checkbox" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Notification+'</label></div>';
+          `<div><input type="checkbox" class="not" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Notification+'</label></div>':
+          `<div><input type="checkbox" class="not" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Notification+'</label></div>';
           
         }
       }
@@ -325,7 +325,58 @@
       function subFormSubmit(e) {
         e.preventDefault();
         var page = "subscriptionForm";
+        var xhr = new XMLHttpRequest();
+        console.log(subscriberKey);
+/*      previousPrefAreasIds=[];
+        previousNotificationsIds=[];
+        previousPrefAreas.forEach(el=>previousPrefAreasIds.push(el.AreaId));
+        previousNotifications.forEach(el=>previousNotificationsIds.push(el.NotificationId));*/
+        
+        //get checked consents
+        let prefAreasIds=[];
+        let notificationsIds=[];
 
+        let prefAreas = document.querySelectorAll('.pref:checked');
+        let notifications = document.querySelectorAll('.not:checked');
+
+        prefAreas.forEach(el=>prefAreasIds.push(el.id.slice(1)));
+        notifications.forEach(el=>notificationsIds.push(el.id.slice(1)));
+
+        console.log(prefAreasIds);
+        console.log(notificationsIds);
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            if (response["Error"] == null) {
+              
+            } else {
+              showError(response["Error"]);
+            }
+
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+            page +
+            "&prefAreasIds=" +
+            prefAreasIds +
+            "&notificationsIds=" +
+            notificationsIds +
+            "&SubscriberKey=" +
+            subscriberKey 
+        );
+        xhr.send();
+      }
+      function showError(err) {
+        var errorWindow = document.querySelector(".errorWindow");
+        errorWindow.classList.remove("hidden");
+        var errorTxt = document.querySelector(".errorTxt");
+        errorTxt.innerHTML = err;
       }
     </script>
   </body>

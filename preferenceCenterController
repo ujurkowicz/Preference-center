@@ -59,7 +59,7 @@ set @TOKEN_DE = 'Verification Tokens'
             set @error = 'No email provided'
         ENDIF
     ELSEIF (@page=='dataForm') THEN
-        set @subscriberKey = AttributeValue('_subscriberkey')
+        set @subscriberKey = '0037Q00000UvtC6QAJ'
     /*UKC-003C*/
         var @firstName, @lastName, @country, @phone, @region
 
@@ -104,14 +104,21 @@ set @TOKEN_DE = 'Verification Tokens'
 
 
     ELSEIF (@page=='subscriptionForm') THEN
-    /*UKC -004*/
-    
+        /*UKC -004*/
+        set @subscriberKey = RequestParameter('SubscriberKey')
+        IF (@subscriberKey == 'undefined') THEN
+            set @error = 'No subscriber key provided'
+        ENDIF
+        set @prefAreasIds = RequestParameter('prefAreasIds')
+        set @notificationsIds = RequestParameter('notificationsIds')
+        
+
 
     ENDIF
 
 ]%%
 <script type="text/javascript" runat="server">
-    var PREFERNCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
+    var PREFERENCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
     var NOTIFICATIONS_DE_EK = 'FE5B10AD-4155-4087-99CF-3B2D932C8F56';
     var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
     
@@ -123,17 +130,54 @@ set @TOKEN_DE = 'Verification Tokens'
     var email = Variable.GetValue("@emailAddress");
     var subscriberKey = Variable.GetValue("@subscriberKey");
 
-    if (page=='dataForm') {
-        var preferenceAreasDE = DataExtension.Init(PREFERNCE_AREAS_DE_EK);
+    if (page=='dataForm' || page=='subscriptionForm') {
+        var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
+        var preferenceAreasDE = DataExtension.Init(PREFERENCE_AREAS_DE_EK);
         var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
         var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
         var notifications = notificationsDE.Rows.Retrieve();
-        var checkedPreferenceAreas = getCheckedConsents("PreferenceArea");
-        var checkedNotifications = getCheckedConsents("Notification");
+        var previousPreferenceAreas = getCheckedConsents("PreferenceArea");
+        var previousNotifications = getCheckedConsents("Notification");
         
     }
+    if (page=='subscriptionForm') {
+        var chosenPrefAreasIds = Variable.GetValue("@prefAreasIds").split(',');
+        var chosenNotificationIds = Variable.GetValue("@notificationsIds").split(',');
+        
+        consentsDE.Rows.Remove(["SubscriberKey"], [subscriberKey]);
+
+        var consents=[];
+        addNewRows("PreferenceArea");
+        addNewRows("Notification");
+        consentsDE.Rows.Add(consents);
+    }
+    function addNewRows(type){
+        if (type=="PreferenceArea") {
+            for (var i=0; i<chosenPrefAreasIds.length;i++) {
+                var newConsent ={
+                    Id: GUID(),
+                    SubscriberKey: subscriberKey,
+                    Type: "PreferenceArea",
+                    AreaId: chosenPrefAreasIds[i]
+                }
+                consents.push(newConsent);
+            }
+        }
+        else if (type=="Notification") {
+            for (var i=0; i<chosenNotificationIds.length;i++) {
+                var newConsent ={
+                    Id: GUID(),
+                    SubscriberKey: subscriberKey,
+                    Type: "Notification",
+                    NotificationId: chosenNotificationIds[i]
+                }
+                consents.push(newConsent);
+            }
+        } 
+    }
+
     function getCheckedConsents(assetType){
-        var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
+        
 
         var filter1 = {
             Property: "SubscriberKey",
@@ -151,7 +195,6 @@ set @TOKEN_DE = 'Verification Tokens'
             } 
         }
         return consentsDE.Rows.Retrieve(complexFilter);
-
     }
 
     var result= { 
@@ -162,8 +205,10 @@ set @TOKEN_DE = 'Verification Tokens'
         SubscriberKey: subscriberKey,
         PreferenceAreas: preferenceAreas,
         Notifications: notifications,
-        CheckedPreferenceAreas: checkedPreferenceAreas,
-        CheckedNotifications: checkedNotifications
+        CheckedPreferenceAreas: previousPreferenceAreas,
+        CheckedNotifications: previousNotifications,
+        ChosenPrefAreasIds: chosenPrefAreasIds,
+        ChosenNotificationIds: chosenNotificationIds
         }
     stringifiedResult = Stringify(result);
           
