@@ -146,3 +146,12 @@ select {
  .notifications, .preferences {
   margin: 20px auto;
  }
+ #thankYouImg {
+  width: 300px;
+ }
+ .thankYou {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin:50px;
+ }
