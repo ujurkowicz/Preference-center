@@ -26,9 +26,9 @@
 
     <!--AUTHENTICATION -->
     <div class="authentication hidden">
-      <div class="hidden errorWindow">
+      <div id="errorWindow" class="hidden errorWindow"> <!-- DK: Tutaj dodałem id żeby można było namierzyć ErrorDiv w JSie i go ukryć -->
         <p class="errorTxt">Error has occured</p>
-        <a href="#">X</a>
+        <a style="cursor: pointer" onclick="hideErrorWindow()">X</a> <!-- DK: Przycisk ukrywający ErrorDiv -->
       </div>
       <h1>AUTHENTICATION</h1>
       <p>%%=v(@emailAddress)=%%</p>
@@ -59,7 +59,7 @@
 
         <fieldset>
           <label for="Phone">Phone</label>
-          <input type="phone" name="Phone" />
+          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{10,13}" required> <!-- DK: Walidacja nr tel. Długość nr musi być pomiędzy 10 a 13 cyfr. Można to zmienić edytując wartości w otwartych klamrach :) -->
         </fieldset>
 
         <fieldset>
@@ -377,6 +377,12 @@
         errorWindow.classList.remove("hidden");
         var errorTxt = document.querySelector(".errorTxt");
         errorTxt.innerHTML = err;
+      }
+
+      // DK: Funkcja ukrywająca ErrorDiv
+
+      function hideErrorWindow() {
+        document.getElementById("errorWindow").style.display = "none";
       }
     </script>
   </body>
