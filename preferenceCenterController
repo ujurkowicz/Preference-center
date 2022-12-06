@@ -59,7 +59,7 @@ set @TOKEN_DE = 'Verification Tokens'
             set @error = 'No email provided'
         ENDIF
     ELSEIF (@page=='dataForm') THEN
-        set @subscriberKey = '0037Q00000UvtC6QAJ'
+        set @subscriberKey = AttributeValue('_subscriberkey')
     /*UKC-003C*/
         var @firstName, @lastName, @country, @phone, @region
 
@@ -81,21 +81,6 @@ set @TOKEN_DE = 'Verification Tokens'
                     "Email", @emailAddress
                 )
 
-        /*    var  @rows, @rowCount
-            set @rows = LookupRows(@CONSENTS_DE,'SubscriberKey', @subscriberKey)
-            set @rowCount = rowCount(@rows)
-            IF @rowCount > 0 THEN*/
-            /*TYPE PREFERNCE AREAS ZNAJDZ ID PREF AREA*/
-            /*    FOR @counter = 1 TO @rowCount DO  
-                    set @row = row(@rows, @counter)  
-                    set @type = field(@row,"Type")
-                    IF @type == 'Preference Area' THEN
-                        set @checkedPrefrenceAreaIds = field(@row,"PrefernceAreaId")+','
-                    ELSEIF @type == 'Notification' THEN
-                        set @checkedNotificationIds = field(@row, "Notification")+','
-                    ENDIF
-                NEXT @counter 
-            ENDIF */
             ENDIF
         ENDIF
         /*UPSERT MDE*/

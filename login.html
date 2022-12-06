@@ -59,17 +59,19 @@
 
         <fieldset>
           <label for="Phone">Phone</label>
-          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{10,13}" required
-           oninvalid="this.setCustomValidity('Please enter a phone number')">
+          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{9,13}"
+          oninvalid="this.setCustomValidity('Enter a phone number')"
+          oninput="this.setCustomValidity('')">
         </fieldset>
 
         <fieldset>
           <label for="Country" id="country">Country*</label>
           <select name="Country" onchange="getCountry()">
-            <option value="anglia">Anglia</option>
-            <option value="belgia">Belgia</option>
-            <option value="chorwacja">Chorwacja</option>
-            <option value="polska">Polska</option>
+            <option value="anglia">England</option>
+            <option value="belgia">Belgium</option>
+            <option value="chorwacja">Croatia</option>
+            <option value="polska">Poland</option>
+            <option value="usa">USA</option>
           </select>
         </fieldset>
 
@@ -121,20 +123,26 @@
     </div>
 
     <!--MARKETING CONSENT FORM-->
-    <div class="dataForm hidden">
+    <div class="marketingForm hidden">
       <h1>MARKETING CONSENT FORM</h1>
       <form id="form5" method="post">
-        <div style="margin-bottom: 25px;">
+        <div class="marketingConsent">
           <input type="checkbox" id="marketingConsent1" name="marketingConsent1" value="marketingConsent1" required style="display: inline-block; margin-top: 7px;">
-          <label for="marketingConsent1" style="display: inline-block; width: 340px; vertical-align: top; margin-left: 10px; line-height: 1rem;"> I have read and understood the Privacy Notice containing information about the processing of my personal data, which is part of my consent given below. I consent to the processing of my personal data (to the extent described in the Privacy Notice) for marketing purposes.</label><br>
+          <label for="marketingConsent1" >I have read and understood the Privacy Notice containing information about the processing of my personal data, which is part of my consent given below. I consent to the processing of my personal data (to the extent described in the Privacy Notice) for marketing purposes. <span class="required">*</span></label><br>
         </div>
-        <div style="margin-bottom: 25px;">
+        <div class="marketingConsent">
           <input type="checkbox" id="marketingConsent2" name="marketingConsent2" value="marketingConsent2" required style="display: inline-block; margin-top: 7px;">
-          <label for="marketingConsent2" style="display: inline-block; width: 340px; vertical-align: top; margin-left: 10px; line-height: 1rem;"> I consent to the processing of my personal data (to the extent described in the Privacy Notice) for direct marketing purposes.</label><br>
+          <label for="marketingConsent2">I consent to the processing of my personal data (to the extent described in the Privacy Notice) for direct marketing purposes. <span class="required">*</span></label></label><br>
         </div>
-        <input name="submitted" type="hidden" value="true" />
         <button type="submit">Next</button>
       </form>
+    </div>
+
+     <!--THANK YOU PAGE-->
+     <div class="thankYou hidden">
+      <img id="thankYouImg"  alt="thankYou"
+      src="https://image.s50.sfmc-content.com/lib/fe3611717564047a721475/m/1/c826113b-0dcd-4657-b503-380d12da6a91.jpg">
+      <p>Your submission has been saved.</p>
     </div>
 
     <script type="text/javascript">
@@ -153,6 +161,9 @@
 
       let form4 = document.querySelector("#form4");
       form4.addEventListener("submit", subFormSubmit, false);
+
+      let form5 = document.querySelector("#form5");
+      form5.addEventListener("submit", subMarketingConsents, false);
 
       var subscriberKey;
 
@@ -235,7 +246,7 @@
         var country = getCountry();
         var firstName = document.querySelector("#fname").value;
         var lastName = document.querySelector("#lname").value;
-        var phone = document.querySelector("input[type=phone]").value;
+        var phone = document.querySelector("input[type=tel]").value;
         let region = document.querySelector(".region").value;
         region = region == undefined ? "" : region;
         console.log("Firstname " + firstName);
@@ -364,6 +375,10 @@
             var response = JSON.parse(xhr.response);
             console.log(response);
             if (response["Error"] == null) {
+              var subForm = document.querySelector(".subscriptionForm");
+              var marketingForm = document.querySelector(".marketingForm");
+              marketingForm.classList.remove("hidden");
+              subForm.classList.add("hidden");
               
             } else {
               showError(response["Error"]);
@@ -386,6 +401,16 @@
         );
         xhr.send();
       }
+
+      function subMarketingConsents(e){
+        e.preventDefault();
+        var thankYou = document.querySelector(".thankYou");
+        var marketingForm = document.querySelector(".marketingForm");
+        marketingForm.classList.add("hidden");
+        thankYou.classList.remove("hidden");
+
+      }
+
       function showError(err) {
         var errorWindow = document.querySelector(".errorWindow");
         errorWindow.classList.remove("hidden");
