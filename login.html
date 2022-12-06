@@ -59,7 +59,8 @@
 
         <fieldset>
           <label for="Phone">Phone</label>
-          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{10,13}" required> <!-- DK: Walidacja nr tel. Długość nr musi być pomiędzy 10 a 13 cyfr. Można to zmienić edytując wartości w otwartych klamrach :) -->
+          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{10,13}" required
+           oninvalid="this.setCustomValidity('Please enter a phone number')"> <!-- DK: Walidacja nr tel. Długość nr musi być pomiędzy 10 a 13 cyfr. Można to zmienić edytując wartości w otwartych klamrach :) -->
         </fieldset>
 
         <fieldset>
@@ -327,10 +328,6 @@
         var page = "subscriptionForm";
         var xhr = new XMLHttpRequest();
         console.log(subscriberKey);
-/*      previousPrefAreasIds=[];
-        previousNotificationsIds=[];
-        previousPrefAreas.forEach(el=>previousPrefAreasIds.push(el.AreaId));
-        previousNotifications.forEach(el=>previousNotificationsIds.push(el.NotificationId));*/
         
         //get checked consents
         let prefAreasIds=[];
@@ -382,7 +379,7 @@
       // DK: Funkcja ukrywająca ErrorDiv
 
       function hideErrorWindow() {
-        document.getElementById("errorWindow").style.display = "none";
+        document.getElementById("errorWindow").classList.add('hidden');
       }
     </script>
   </body>
