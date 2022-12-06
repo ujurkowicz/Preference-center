@@ -1,0 +1,201 @@
+%%[
+
+set @TOKEN_DE = 'Verification Tokens'
+    set @MDE = 'MDE'
+    set @PREFERENCE_AREAS_DE= 'Preference Areas'
+    set @CONSENTS_DE = 'Consents'
+      
+    var @page,
+    var @emailAddress,
+    var @token,
+    var @expirationDate,
+    var @isUsed,
+    var @subscriberKey
+
+    /*set @subscriberKey = '0037Q00000UvtC6QAJ'*/
+    /*set @subscriberKey = AttributeValue('_subscriberkey')*/
+    set @page=RequestParameter('page')
+      
+    IF (@page=='login') THEN
+        set @emailAddress=RequestParameter('EmailAddress')
+        set @token=random(100000,999999)
+        set @expirationDate=DateAdd(Now(), 1, "H")
+        set @isUsed=False
+        UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
+      
+    ELSEIF (@page=='authentication') THEN
+        var  @rows,  @rowCount, @row, @error
+
+        set @emailAddress=RequestParameter('EmailAddress')
+        set @rows = LookupRows(@TOKEN_DE,"EmailAddress", @emailAddress)
+        set @rowCount = rowCount(@rows)
+
+        IF @rowCount > 0 THEN
+
+            /*sprawdz token i czy wazny i czy nie zuzyty*/   
+
+            set @row = row(@rows, 1)
+            set @token = field(@row, "Token")
+
+            IF (RequestParameter("token") == @token) THEN
+                set @expirationDate = field(@row, "ExpirationDate")
+
+                IF (Now() <= @expirationDate) THEN
+                    set @isUsed = field(@row, "isUsed")
+
+                    IF (@isUsed == False) THEN 
+                        UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "IsUsed", "True")
+
+                    ELSE
+                           set @error= 'The verification code has been used'
+                    ENDIF
+                ELSE 
+                    set @error = 'The verification code has expired'
+                ENDIF
+            ELSE 
+                set @error = 'Incorrect verification code provided'
+            ENDIF 
+        ELSE 
+            set @error = 'No email provided'
+        ENDIF
+    ELSEIF (@page=='dataForm') THEN
+        set @subscriberKey = AttributeValue('_subscriberkey')
+    /*UKC-003C*/
+        var @firstName, @lastName, @country, @phone, @region
+
+        set @emailAddress = RequestParameter('EmailAddress')
+        set @firstName = RequestParameter('firstName')
+        set @lastName = RequestParameter('lastName')
+        set @phone = RequestParameter('phone')
+        set @country = RequestParameter('country')
+        set @region = RequestParameter('region')
+
+        IF (@subscriberKey == '') THEN
+            set @subscriberKey = RequestParameter('SubscriberKey')
+            IF (@subscriberKey == 'undefined') THEN
+                /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
+                set @subscriberKey = CreateSalesforceObject (
+                    "Contact", 3,
+                    "FirstName", @firstName,
+                    "LastName", @lastName,
+                    "Email", @emailAddress
+                )
+
+            ENDIF
+        ENDIF
+        /*UPSERT MDE*/
+        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
+        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+
+
+    ELSEIF (@page=='subscriptionForm') THEN
+        /*UKC -004*/
+        set @subscriberKey = RequestParameter('SubscriberKey')
+        IF (@subscriberKey == 'undefined') THEN
+            set @error = 'No subscriber key provided'
+        ENDIF
+        set @prefAreasIds = RequestParameter('prefAreasIds')
+        set @notificationsIds = RequestParameter('notificationsIds')
+        
+
+
+    ENDIF
+
+]%%
+<script type="text/javascript" runat="server">
+    var PREFERENCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
+    var NOTIFICATIONS_DE_EK = 'FE5B10AD-4155-4087-99CF-3B2D932C8F56';
+    var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
+    
+    Platform.Load("core", "1");
+            
+    var page = Variable.GetValue("@page");
+    var token = Variable.GetValue("@token");
+    var error = Variable.GetValue("@error");
+    var email = Variable.GetValue("@emailAddress");
+    var subscriberKey = Variable.GetValue("@subscriberKey");
+
+    if (page=='dataForm' || page=='subscriptionForm') {
+        var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
+        var preferenceAreasDE = DataExtension.Init(PREFERENCE_AREAS_DE_EK);
+        var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
+        var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
+        var notifications = notificationsDE.Rows.Retrieve();
+        var previousPreferenceAreas = getCheckedConsents("PreferenceArea");
+        var previousNotifications = getCheckedConsents("Notification");
+        
+    }
+    if (page=='subscriptionForm') {
+        var chosenPrefAreasIds = Variable.GetValue("@prefAreasIds").split(',');
+        var chosenNotificationIds = Variable.GetValue("@notificationsIds").split(',');
+        
+        consentsDE.Rows.Remove(["SubscriberKey"], [subscriberKey]);
+
+        var consents=[];
+        addNewRows("PreferenceArea");
+        addNewRows("Notification");
+        consentsDE.Rows.Add(consents);
+    }
+    function addNewRows(type){
+        if (type=="PreferenceArea") {
+            for (var i=0; i<chosenPrefAreasIds.length;i++) {
+                var newConsent ={
+                    Id: GUID(),
+                    SubscriberKey: subscriberKey,
+                    Type: "PreferenceArea",
+                    AreaId: chosenPrefAreasIds[i]
+                }
+                consents.push(newConsent);
+            }
+        }
+        else if (type=="Notification") {
+            for (var i=0; i<chosenNotificationIds.length;i++) {
+                var newConsent ={
+                    Id: GUID(),
+                    SubscriberKey: subscriberKey,
+                    Type: "Notification",
+                    NotificationId: chosenNotificationIds[i]
+                }
+                consents.push(newConsent);
+            }
+        } 
+    }
+
+    function getCheckedConsents(assetType){
+        
+
+        var filter1 = {
+            Property: "SubscriberKey",
+            SimpleOperator: "equals",
+            Value: subscriberKey
+        }
+        
+        var complexFilter = {
+            LeftOperand: filter1,
+            LogicalOperator: "AND",
+            RightOperand: {
+                Property: "Type",
+                SimpleOperator: "equals",
+                Value: assetType
+            } 
+        }
+        return consentsDE.Rows.Retrieve(complexFilter);
+    }
+
+    var result= { 
+        Page: page,
+        Token: token,
+        Error: error,
+        Email: email,
+        SubscriberKey: subscriberKey,
+        PreferenceAreas: preferenceAreas,
+        Notifications: notifications,
+        CheckedPreferenceAreas: previousPreferenceAreas,
+        CheckedNotifications: previousNotifications,
+        ChosenPrefAreasIds: chosenPrefAreasIds,
+        ChosenNotificationIds: chosenNotificationIds
+        }
+    stringifiedResult = Stringify(result);
+          
+</script>
+<ctrl:var name=stringifiedResult />

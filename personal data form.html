@@ -6,20 +6,19 @@
            Platform.Load("core", "1");
 
            function getCountry() {
-               /* var xhr = new XMLHttpRequest();
+               var xhr = new XMLHttpRequest();
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         var response = JSON.parse(xhr.response);
                         console.log(response);
-                        alert("Regions: " + response.Content);
                     } else {
                         alert('The request failed!');
                     }
-                };*/
+                };
                 var country = document.querySelector('select').value;
                 console.log(country);
-                //xhr.open('GET', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/qjd4bd1apoz?country='+country);
-                //xhr.send();
+                xhr.open('GET', 'https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/qjd4bd1apoz?country='+country);
+                xhr.send();
                 if (country=='polska') {
                     document.querySelector('.region').classList.remove("hidden");
                 }

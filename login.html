@@ -1,147 +1,426 @@
-<!DOCTYPE HTML>
 <html>
-    <script runat="server" language="ampscript">
-        var @tokenDE,
-        var @emailAddress,
-        var @token,
-        var @expirationDate,
-        var @isUsed
-
-        set @tokenDE ='Verification Tokens'
-        if RequestParameter("submitted") == true then
-        set @emailAddress=RequestParameter('EmailAddress')
-        set @token=random(100000,999999)
-        set @expirationDate=DateAdd(Now(), 1, "H")
-        set @isUsed=False
-        UpsertDE(@tokenDE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
-        Redirect(CloudPagesURL(8249, 'emailAddress', @emailAddress))
-        endif
-    </script>
-    <head>
-    <style>
-        
-      body {
-        height:100vh;
-        width:100%;
-        font-family: sans-serif;
-        font-size:13px;
-        height: 100%;
-      }
-     
-      .container{
-        display:flex;
-        flex-direction: column;
-      }
-      
-
-      label {
-        display:block;
-        padding-top:5px;
-      }
-      input[type="text"] {
-        display:block;
-
-      }
-      fieldset {
-        border: 0;
-        padding:0;
-        margin:0;
-      }
-      h1, h2, p{
-        text-align:center;
-        color:#323030;
-        margin:20px;
-      }
-      h1{
-        margin-top:50px;
-        letter-spacing:2px;
-      }
-      form {
-        margin:10px auto 0 auto;
-        padding:20px;
-        width:400px;
-        height:auto;
-        overflow:hidden;
-        background-color:rgba(255, 255, 255, 0.7);
-        border-radius:10px;
-       }
-       
-       form label {
-        font-size:14px;
-        color:darkgray;
-        cursor:pointer;
-       }
-       
-       
-       
-       form input {
-        margin:15px 0;
-        padding:10px 10px;
-        width:100%;
-        outline:none;
-        border:1px solid #bbb;
-        border-radius:20px;
-        display:inline-block;
-        -webkit-box-sizing:border-box;
-           -moz-box-sizing:border-box;
-                box-sizing:border-box;
-           -webkit-transition:0.2s ease all;
-           -moz-transition:0.2s ease all;
-            -ms-transition:0.2s ease all;
-             -o-transition:0.2s ease all;
-                transition:0.2s ease all;
-       }
-       
-       form input[type=text]:focus {
-        border-color:cornflowerblue;
-       }
-     
-       button{
-        border-radius:5px;
-        display:block;
-        margin:20px auto;
-        padding:15px 50px;
-        background:#1e8e3e;
-        border:none;
-        color:white;
-        cursor:pointer;
-        -webkit-transition:0.2s ease all;
-           -moz-transition:0.2s ease all;
-            -ms-transition:0.2s ease all;
-             -o-transition:0.2s ease all;
-                transition:0.2s ease all;
-       }
-       
-       button {
-        opacity:0.8;
-       }
-       
-       button:active {
-        opacity:0.4;
-       }
-    </style>
-    </head>
-    <body>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr"
+    />
+  </head>
+  <body>
+    <!-- LOGIN  -->
+    <div class="login">
       <h1>LOG IN</h1>
       <div class="container">
-       
-        <form id="form1" method="post" >
-         <fieldset>
-          <!--
+        <form id="form1" method="post">
+          <fieldset>
+            <!--
           <input type="hidden" name="SubscriberKey" value="%%=v(@SubscriberKey)=%%">>
-          action="%%=RedirectTo(CloudPagesURL(8249))=%%"
-          
--->
-          <label for="Email Address">Email Address</label>
-          <input type="email" name="EmailAddress" required>
-
-         </fieldset>
-         <input name="submitted" type="hidden" value="true" />
-         <button type="submit">Next</button>
-
+          action="%%=RedirectTo(CloudPagesURL(8249))=%%"-->
+            <label for="Email Address">Email Address</label>
+            <input type="email" name="EmailAddress" required />
+          </fieldset>
+          <input name="submitted" type="hidden" value="true" />
+          <button type="submit">Next</button>
         </form>
       </div>
-      %%=v(@token)=%%
-      %%=v(@emailAddress)=%%
-    </body>
+    </div>
+
+    <!--AUTHENTICATION -->
+    <div class="authentication hidden">
+      <div id="errorWindow" class="hidden errorWindow">
+        <p class="errorTxt">Error has occured</p>
+        <a style="cursor: pointer" onclick="hideErrorWindow()">X</a>
+      </div>
+      <h1>AUTHENTICATION</h1>
+      <p>%%=v(@emailAddress)=%%</p>
+      <form id="form2" method="post">
+        <fieldset>
+          <label for="VerificationCode">Verification code</label>
+          <input id="token" type="number" name="VerificationCode" required />
+        </fieldset>
+        <input name="submitted" type="hidden" value="true" />
+        <button type="submit">Next</button>
+      </form>
+    </div>
+
+    <!--PERSONAL DATA FORM -->
+    <div class="dataForm hidden">
+      <h1>PERSONAL DATA FORM</h1>
+
+      <form id="form3" method="post">
+        <fieldset>
+          <label for="FirstName">First Name*</label>
+          <input type="text" name="FirstName" id="fname" required />
+        </fieldset>
+
+        <fieldset>
+          <label for="LastName">Last Name*</label>
+          <input type="text" name="LastName" id="lname" required />
+        </fieldset>
+
+        <fieldset>
+          <label for="Phone">Phone</label>
+          <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{9,13}"
+          oninvalid="this.setCustomValidity('Enter a phone number')"
+          oninput="this.setCustomValidity('')">
+        </fieldset>
+
+        <fieldset>
+          <label for="Country" id="country">Country*</label>
+          <select name="Country" onchange="getCountry()">
+            <option value="anglia">England</option>
+            <option value="belgia">Belgium</option>
+            <option value="chorwacja">Croatia</option>
+            <option value="polska">Poland</option>
+            <option value="usa">USA</option>
+          </select>
+        </fieldset>
+
+        <fieldset class="hidden region">
+          <label for="Region">Region</label>
+          <select name="Region">
+            <option value="dolnoslaskie">Dolnośląskie</option>
+            <option value="kujawsko-pomorskie">Kujawsko-pomorskie</option>
+            <option value="lubelskie">Lubelskie</option>
+            <option value="lubuskie">Lubuskie</option>
+            <option value="lodzkie">Łódzkie</option>
+            <option value="malopolskie">Małopolskie</option>
+            <option value="mazowieckie">Mazowieckie</option>
+            <option value="opolskie">Opolskie</option>
+            <option value="podkarpackie">Podkarpackie</option>
+            <option value="podlaskie">Podlaskie</option>
+            <option value="pomorskie">Pomorskie</option>
+            <option value="slaskie">Śląskie</option>
+            <option value="swietokrzyskie">Świętokrzyskie</option>
+            <option value="warminsko-mazurskie">Warmińsko-mazurskie</option>
+            <option value="wielkopolskie">Wielkopolskie</option>
+            <option value="zachodniopomorskie">Zachodniopomorskie</option>
+          </select>
+        </fieldset>
+        <input name="submitted" type="hidden" value="true" />
+        <button type="submit">Next</button>
+      </form>
+    </div>
+
+    <!--SUBSCRIPTION FORM -->
+    <div class="subscriptionForm hidden">
+      <form id="form4">
+        <h2>What are your area of interests?</h2>
+        <fieldset>
+          <div class="preferences">
+          </div>
+        </fieldset>
+        <h2>What kind of the notifications do you want to get?</h2>
+        <fieldset>
+          <div class="notifications">
+          </div>
+        </fieldset>
+        <div class="btns-container">
+          <button id="back">Back</button>
+          <input name="submitted" type="hidden" value="true" />
+          <button type="submit">Next</button>
+        </div>
+      </form>
+    </div>
+
+    <!--MARKETING CONSENT FORM-->
+    <div class="marketingForm hidden">
+      <h1>MARKETING CONSENT FORM</h1>
+      <form id="form5" method="post">
+        <div class="marketingConsent">
+          <input type="checkbox" id="marketingConsent1" name="marketingConsent1" value="marketingConsent1" required style="display: inline-block; margin-top: 7px;">
+          <label for="marketingConsent1" >I have read and understood the Privacy Notice containing information about the processing of my personal data, which is part of my consent given below. I consent to the processing of my personal data (to the extent described in the Privacy Notice) for marketing purposes. <span class="required">*</span></label><br>
+        </div>
+        <div class="marketingConsent">
+          <input type="checkbox" id="marketingConsent2" name="marketingConsent2" value="marketingConsent2" required style="display: inline-block; margin-top: 7px;">
+          <label for="marketingConsent2">I consent to the processing of my personal data (to the extent described in the Privacy Notice) for direct marketing purposes. <span class="required">*</span></label></label><br>
+        </div>
+        <button type="submit">Next</button>
+      </form>
+    </div>
+
+     <!--THANK YOU PAGE-->
+     <div class="thankYou hidden">
+      <img id="thankYouImg"  alt="thankYou"
+      src="https://image.s50.sfmc-content.com/lib/fe3611717564047a721475/m/1/c826113b-0dcd-4657-b503-380d12da6a91.jpg">
+      <p>Your submission has been saved.</p>
+    </div>
+
+    <script type="text/javascript">
+      let form1 = document.querySelector("#form1");
+      form1.addEventListener("submit", emailSubmit, false);
+
+      let form2 = document.querySelector("#form2");
+      form2.addEventListener("submit", tokenSubmit, false);
+      var email = document.querySelector("input[type=email]");
+
+      let form3 = document.querySelector("#form3");
+      form3.addEventListener("submit", dataFormSubmit, false);
+
+      let backBtn = document.querySelector("#back");
+      backBtn.addEventListener("click", backtoDataForm, false);
+
+      let form4 = document.querySelector("#form4");
+      form4.addEventListener("submit", subFormSubmit, false);
+
+      let form5 = document.querySelector("#form5");
+      form5.addEventListener("submit", subMarketingConsents, false);
+
+      var subscriberKey;
+
+      function emailSubmit(e) {
+        e.preventDefault();
+        console.log(email.value);
+        var page = "login";
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            var authentication = document.querySelector(".authentication");
+            var login = document.querySelector(".login");
+            login.classList.add("hidden");
+            authentication.classList.remove("hidden");
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?EmailAddress=" +
+            email.value +
+            "&page=" +
+            page
+        );
+        xhr.send();
+      }
+
+      function tokenSubmit(e) {
+        e.preventDefault();
+        var token = document.querySelector("#token");
+        console.log(token.value);
+        var page = "authentication";
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            if (response["Error"] == null) {
+              var authentication = document.querySelector(".authentication");
+              var dataForm = document.querySelector(".dataForm");
+              authentication.classList.add("hidden");
+              dataForm.classList.remove("hidden");
+            } else {
+              showError(response["Error"]);
+            }
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?token=" +
+            token.value +
+            "&page=" +
+            page +
+            "&EmailAddress=" +
+            email.value
+        );
+        xhr.send();
+      }
+
+      function getCountry() {
+        var country = document.querySelector("select").value;
+        if (country == "polska") {
+          document.querySelector(".region").classList.remove("hidden");
+        } else if (
+          !document.querySelector(".region").classList.contains("hidden")
+        ) {
+          document.querySelector(".region").classList.add("hidden");
+        }
+        return country;
+      }
+
+      function dataFormSubmit(e) {
+        e.preventDefault();
+        var page = "dataForm";
+        var country = getCountry();
+        var firstName = document.querySelector("#fname").value;
+        var lastName = document.querySelector("#lname").value;
+        var phone = document.querySelector("input[type=tel]").value;
+        let region = document.querySelector(".region").value;
+        region = region == undefined ? "" : region;
+        console.log("Firstname " + firstName);
+        console.log("Lastname " + lastName);
+        console.log("Phone " + phone);
+        console.log("Country " + country);
+        console.log("Region " + region);
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+
+            var subForm = document.querySelector(".subscriptionForm");
+            var dataForm = document.querySelector(".dataForm");
+            dataForm.classList.add("hidden");
+            subForm.classList.remove("hidden");
+
+            let previousPrefAreas=response.CheckedPreferenceAreas;
+            let previousNotifications = response.CheckedNotifications;
+            showPreferences(response.PreferenceAreas, previousPrefAreas);
+            showNotifications(response.Notifications, previousNotifications);
+            subscriberKey=response.SubscriberKey;
+            console.log(subscriberKey);
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "GET",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+            page +
+            "&firstName=" +
+            firstName +
+            "&lastName=" +
+            lastName +
+            "&country=" +
+            country +
+            "&phone=" +
+            phone +
+            "&region=" +
+            region +
+            "&EmailAddress=" +
+            email.value +
+            "&SubscriberKey=" +
+            subscriberKey
+        );
+        xhr.send();
+      }
+      
+      function showPreferences(prefArr, checkedPrefArr){
+        let preferences = document.querySelector('.preferences');
+        preferences.innerHTML='';
+        for (let i=0; i<prefArr.length; i++) {
+          let prefId='p'+prefArr[i].Id;
+          let pref = "pref"+(i+1).toString();
+          let checked=false;
+          for (let j=0; j<checkedPrefArr.length; j++) {
+            console.log('in checked array');
+            console.log(checkedPrefArr[j].AreaId);
+            if (prefArr[i].Id==checkedPrefArr[j].AreaId) {
+               checked = true;
+               console.log('consent found');
+              break;
+            }
+          }
+          preferences.innerHTML+=checked?
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>':
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
+          
+        }
+      }
+
+      function showNotifications(notArr, checkedNotArr){
+        let notifications = document.querySelector('.notifications');
+        notifications.innerHTML='';
+        for (let i=0; i<notArr.length; i++) {
+          console.log('in notification arr');
+          let notId='n'+notArr[i].Id;
+          let not="not"+(i+1).toString();
+          let checked=false;
+          for (let j=0; j<checkedNotArr.length; j++) {
+            console.log('in checked array');
+            if (notArr[i].Id==checkedNotArr[j].NotificationId) {
+               checked = true;
+               console.log('consent found');
+              break;
+            }
+          }
+          notifications.innerHTML+=checked?
+          `<div><input type="checkbox" class="not" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Notification+'</label></div>':
+          `<div><input type="checkbox" class="not" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Notification+'</label></div>';
+          
+        }
+      }
+
+      function backtoDataForm(e) {
+        e.preventDefault();
+        var subForm = document.querySelector(".subscriptionForm");
+        var dataForm = document.querySelector(".dataForm");
+        subForm.classList.add("hidden");
+        dataForm.classList.remove("hidden");
+      }
+
+      function subFormSubmit(e) {
+        e.preventDefault();
+        var page = "subscriptionForm";
+        var xhr = new XMLHttpRequest();
+        console.log(subscriberKey);
+        
+        //get checked consents
+        let prefAreasIds=[];
+        let notificationsIds=[];
+
+        let prefAreas = document.querySelectorAll('.pref:checked');
+        let notifications = document.querySelectorAll('.not:checked');
+
+        prefAreas.forEach(el=>prefAreasIds.push(el.id.slice(1)));
+        notifications.forEach(el=>notificationsIds.push(el.id.slice(1)));
+
+        console.log(prefAreasIds);
+        console.log(notificationsIds);
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var response = JSON.parse(xhr.response);
+            console.log(response);
+            if (response["Error"] == null) {
+              var subForm = document.querySelector(".subscriptionForm");
+              var marketingForm = document.querySelector(".marketingForm");
+              marketingForm.classList.remove("hidden");
+              subForm.classList.add("hidden");
+              
+            } else {
+              showError(response["Error"]);
+            }
+
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+            page +
+            "&prefAreasIds=" +
+            prefAreasIds +
+            "&notificationsIds=" +
+            notificationsIds +
+            "&SubscriberKey=" +
+            subscriberKey 
+        );
+        xhr.send();
+      }
+
+      function subMarketingConsents(e){
+        e.preventDefault();
+        var thankYou = document.querySelector(".thankYou");
+        var marketingForm = document.querySelector(".marketingForm");
+        marketingForm.classList.add("hidden");
+        thankYou.classList.remove("hidden");
+
+      }
+
+      function showError(err) {
+        var errorWindow = document.querySelector(".errorWindow");
+        errorWindow.classList.remove("hidden");
+        var errorTxt = document.querySelector(".errorTxt");
+        errorTxt.innerHTML = err;
+      }
+
+      function hideErrorWindow() {
+        document.getElementById("errorWindow").classList.add('hidden');
+      }
+    </script>
+  </body>
 </html>
