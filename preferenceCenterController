@@ -1,9 +1,9 @@
 %%[
 
-set @TOKEN_DE = 'Verification Tokens'
-    set @MDE = 'MDE'
-    set @PREFERENCE_AREAS_DE= 'Preference Areas'
-    set @CONSENTS_DE = 'Consents'
+set @TOKEN_DE = 'ENT.Verification Tokens'
+    set @MDE = 'ENT.MDE'
+    set @PREFERENCE_AREAS_DE= 'ENT.Preference Areas'
+    set @CONSENTS_DE = 'ENT.Consents'
       
     var @page,
     var @emailAddress,
