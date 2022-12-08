@@ -2,7 +2,7 @@
   <head>
     <link
       rel="stylesheet"
-      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr"
+      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/2szairh55as"
     />
   </head>
   <body>
@@ -12,9 +12,6 @@
       <div class="container">
         <form id="form1" method="post">
           <fieldset>
-            <!--
-          <input type="hidden" name="SubscriberKey" value="%%=v(@SubscriberKey)=%%">>
-          action="%%=RedirectTo(CloudPagesURL(8249))=%%"-->
             <label for="Email Address">Email Address</label>
             <input type="email" name="EmailAddress" required />
           </fieldset>
@@ -31,7 +28,7 @@
         <a style="cursor: pointer" onclick="hideErrorWindow()">X</a>
       </div>
       <h1>AUTHENTICATION</h1>
-      <p>%%=v(@emailAddress)=%%</p>
+      <p></p>
       <form id="form2" method="post">
         <fieldset>
           <label for="VerificationCode">Verification code</label>
@@ -145,7 +142,23 @@
       <p>Your submission has been saved.</p>
     </div>
 
+    <div id="loading-background" class="loading-background">
+    </div>
+
+    <div class="spinner-container">
+      <div id="spinner-background" class="spinner-background">
+        <div class="lds-ring">
+          <div></div><div></div><div></div><div></div>
+        </div>
+      </div>
+    </div>
+
     <script type="text/javascript">
+      window.onload = function() {
+        document.getElementById("loading-background").style.display = "none";  
+        document.getElementById("spinner-background").style.display = "none"; 
+      }
+  
       let form1 = document.querySelector("#form1");
       form1.addEventListener("submit", emailSubmit, false);
 
@@ -186,7 +199,7 @@
         };
         xhr.open(
           "POST",
-          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?EmailAddress=" +
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/vgwqepljcxd?EmailAddress=" +
             email.value +
             "&page=" +
             page
@@ -218,7 +231,7 @@
         };
         xhr.open(
           "POST",
-          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?token=" +
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/vgwqepljcxd?token=" +
             token.value +
             "&page=" +
             page +
@@ -277,7 +290,7 @@
         };
         xhr.open(
           "GET",
-          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/vgwqepljcxd?page=" +
             page +
             "&firstName=" +
             firstName +
@@ -390,7 +403,7 @@
         };
         xhr.open(
           "POST",
-          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/vgwqepljcxd?page=" +
             page +
             "&prefAreasIds=" +
             prefAreasIds +
