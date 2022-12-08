@@ -76,7 +76,7 @@
             set @error = 'No email provided'
         ENDIF
     ELSEIF (@page=='dataForm') THEN
-        set @subscriberKey = AttributeValue('_subscriberkey')
+        /*set @subscriberKey = AttributeValue('_subscriberkey')*/
     /*UKC-003C*/
         var @firstName, @lastName, @country, @phone, @region
 
@@ -87,9 +87,15 @@
         set @country = RequestParameter('country')
         set @region = RequestParameter('region')
 
-        IF (@subscriberKey == '') THEN
+        /*CHECK IF EMAIL ALREADY EXISTS IN RECORDS IN MDE IF FIELD: PERSONALEMAIL, WORKEMAIL, UNIVERSITYEMAIL */
+        set @personalRows = LookupRows(@MDE, 'PersonalEmail', @emailAddress)
+        set @workRows = LookupRows(@MDE, 'WorkEmail', @emailAddress)
+        set @universityRows = LookupRows(@MDE, 'UniversityEmail', @emailAddress)
+
+        IF (rowcount(@personalRows)==0 AND rowcount(@workRows)==0 AND rowcount(@universityRows)==0) THEN
+       /* IF (@subscriberKey == '') THEN
             set @subscriberKey = RequestParameter('SubscriberKey')
-            IF (@subscriberKey == 'undefined') THEN
+            IF (@subscriberKey == 'undefined') THEN*/
                 /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
                 set @subscriberKey = CreateSalesforceObject (
                     "Contact", 3,
@@ -97,12 +103,27 @@
                     "LastName", @lastName,
                     "Email", @emailAddress
                 )
-
+                /*UPSERT MDE*/
+                UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "PersonalEmail", @emailAddress,
+                'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+        ELSE
+            IF (rowcount(@personalRows)==1)  THEN
+                set @row=row(@personalRows,1)
+                set @subscriberKey=field(@row, "SubscriberKey")
+            ELSEIF (rowcount(@workRows)==1)  THEN
+                set @row=row(@workRows,1)
+                set @subscriberKey=field(@row, "SubscriberKey")
+            ELSEIF (rowcount(@universityRows)==1)  THEN
+                set @row=row(@universityRows,1)
+                set @subscriberKey=field(@urow, "SubscriberKey")
             ENDIF
+            /*UPSERT MDE*/
+            
+            UpsertDE(@MDE,1,"SubscriberKey", @subscriberKey, 
+            'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
         ENDIF
-        /*UPSERT MDE*/
-        UpsertDE(@MDE,1,'SubscriberKey', @subscriberKey, "EmailAddress", @emailAddress,
-        'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
+       /* ENDIF*/
+        
 
 
     ELSEIF (@page=='subscriptionForm') THEN
@@ -120,11 +141,12 @@
 
 ]%%
 <script type="text/javascript" runat="server">
+    Platform.Load("core", "1");
     var PREFERENCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
     var NOTIFICATIONS_DE_EK = 'FE5B10AD-4155-4087-99CF-3B2D932C8F56';
     var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
     
-    Platform.Load("core", "1");
+
             
     var page = Variable.GetValue("@page");
     var token = Variable.GetValue("@token");
