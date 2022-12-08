@@ -1,9 +1,11 @@
 %%[
 
-set @TOKEN_DE = 'ENT.Verification Tokens'
+    set @TOKEN_DE = 'ENT.Verification Tokens'
     set @MDE = 'ENT.MDE'
     set @PREFERENCE_AREAS_DE= 'ENT.Preference Areas'
     set @CONSENTS_DE = 'ENT.Consents'
+
+    set @TRIGGER_SEND_DEF = "160303"
       
     var @page,
     var @emailAddress,
@@ -22,6 +24,21 @@ set @TOKEN_DE = 'ENT.Verification Tokens'
         set @expirationDate=DateAdd(Now(), 1, "H")
         set @isUsed=False
         UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
+        /*Trigger Send */
+        VAR @ts, @tsDef, @ts_sub, @ts_statusCode, @ts_statusMsg, @errorCode
+        SET @ts = CreateObject("TriggeredSend")
+        SET @tsDef = CreateObject("TriggeredSendDefinition")
+        SetObjectProperty(@tsDef, "CustomerKey", @TRIGGER_SEND_DEF)
+        SetObjectProperty(@ts, "TriggeredSendDefinition", @tsDef)
+
+        SET @ts_sub = CreateObject("Subscriber")
+        SetObjectProperty(@ts_sub, "EmailAddress", @emailAddress)
+        SetObjectProperty(@ts_sub, "SubscriberKey", @emailAddress)
+        AddObjectArrayItem(@ts, "Subscribers", @ts_sub)
+        
+        SET @ts_statusCode = InvokeCreate(@ts, @ts_statusMsg, @errorCode)
+
+
       
     ELSEIF (@page=='authentication') THEN
         var  @rows,  @rowCount, @row, @error
@@ -181,7 +198,7 @@ set @TOKEN_DE = 'ENT.Verification Tokens'
         }
         return consentsDE.Rows.Retrieve(complexFilter);
     }
-
+    var statusCode=Variable.GetValue("@errorCode")
     var result= { 
         Page: page,
         Token: token,
@@ -193,7 +210,8 @@ set @TOKEN_DE = 'ENT.Verification Tokens'
         CheckedPreferenceAreas: previousPreferenceAreas,
         CheckedNotifications: previousNotifications,
         ChosenPrefAreasIds: chosenPrefAreasIds,
-        ChosenNotificationIds: chosenNotificationIds
+        ChosenNotificationIds: chosenNotificationIds,
+        TriggerSend: statusCode
         }
     stringifiedResult = Stringify(result);
           
