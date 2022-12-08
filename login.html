@@ -312,8 +312,8 @@
             }
           }
           preferences.innerHTML+=checked?
-         `<input type="checkbox" class="pref" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>':
-         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Area+'</label><p>'+prefArr[i].Description+'</p>';
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Asset+'</label><p>'+prefArr[i].Description+'</p>':
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Asset+'</label><p>'+prefArr[i].Description+'</p>';
           
         }
       }
@@ -335,8 +335,8 @@
             }
           }
           notifications.innerHTML+=checked?
-          `<div><input type="checkbox" class="not" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Notification+'</label></div>':
-          `<div><input type="checkbox" class="not" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Notification+'</label></div>';
+          `<div><input type="checkbox" class="not" id=${notId} name=${not} checked/><label for=${notId}>`+notArr[i].Asset+'</label><p>'+notArr[i].Description+'</p></div>':
+          `<div><input type="checkbox" class="not" id=${notId} name=${not}/><label for=${notId}>`+notArr[i].Asset+'</label></div><p>'+notArr[i].Description+'</p>';
           
         }
       }
