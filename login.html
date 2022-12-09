@@ -5,10 +5,11 @@
       rel="stylesheet"
       href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr"
     />
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   </head>
   <body>
     <!-- LOGIN  -->
-    <div class="login">
+    <div id="login">
       <h1>LOG IN</h1>
       <div class="container">
         <form id="form1" method="post">
@@ -24,10 +25,10 @@
     </div>
 
     <!--AUTHENTICATION -->
-    <div class="authentication hidden">
+    <div id="authentication" class="hidden">
       <div id="errorWindow" class="hidden errorWindow">
         <p class="errorTxt">Error has occured</p>
-        <a style="cursor: pointer" onclick="hideErrorWindow()">X</a>
+        <a style="cursor: pointer" onclick="hideWindow('errorWindow')">X</a>
       </div>
       <h1>AUTHENTICATION</h1>
       <form id="form2" method="post">
@@ -41,7 +42,7 @@
     </div>
 
     <!--PERSONAL DATA FORM -->
-    <div class="dataForm hidden">
+    <div id="dataForm" class="hidden">
       <h1>PERSONAL DATA FORM</h1>
 
       <form id="form3" method="post">
@@ -100,7 +101,7 @@
     </div>
 
     <!--SUBSCRIPTION FORM -->
-    <div class="subscriptionForm hidden">
+    <div id="subscriptionForm" class="hidden">
       <form id="form4">
         <h2>What are your area of interests?</h2>
         <fieldset>
@@ -112,16 +113,27 @@
           <div class="notifications">
           </div>
         </fieldset>
+        <button id="unsubscribe">Unsubscribe</button>
         <div class="btns-container">
           <button id="back">Back</button>
           <input name="submitted" type="hidden" value="true" />
           <button type="submit">Next</button>
         </div>
       </form>
+      <div id="confirm" class="hidden">
+        <div class="backgroundContainer"></div>
+        <div class="messageContainer">
+          <div id="confirmMessage">Are you sure you want to unsubscribe?</div>
+          <div class="btns-container">
+            <input id="confirmYes" type="button" value="Yes" />
+            <input id="confirmNo" type="button" value="Cancel" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!--MARKETING CONSENT FORM-->
-    <div class="marketingForm hidden">
+    <div id="marketingForm" class="hidden">
       <h1>MARKETING CONSENT</h1>
       <form id="form5" method="post">
         <div class="marketingConsent">
@@ -137,7 +149,7 @@
     </div>
 
      <!--THANK YOU PAGE-->
-     <div class="thankYou hidden">
+     <div id="thankYou" class="hidden">
       <img id="thankYouImg"  alt="thankYou"
       src="https://image.s50.sfmc-content.com/lib/fe3611717564047a721475/m/1/c826113b-0dcd-4657-b503-380d12da6a91.jpg">
       <p>Your submission has been saved.</p>
@@ -163,6 +175,15 @@
       let form5 = document.querySelector("#form5");
       form5.addEventListener("submit", subMarketingConsents, false);
 
+      let unsubscribeBtn = document.querySelector("#unsubscribe");
+      unsubscribeBtn.addEventListener("click", () => { showWindow(event,'confirm') }, false);
+
+      let cancelMessage = document.querySelector('#confirmNo');
+      cancelMessage.addEventListener("click", () => { hideWindow('confirm') }, false);
+
+      let confirmUnsubscribe = document.querySelector('#confirmYes');
+      confirmUnsubscribe.addEventListener("click", unsubscribe, false);
+
       var subscriberKey;
 
       function emailSubmit(e) {
@@ -174,10 +195,8 @@
           if (xhr.status >= 200 && xhr.status < 300) {
             var response = JSON.parse(xhr.response);
             console.log(response);
-            var authentication = document.querySelector(".authentication");
-            var login = document.querySelector(".login");
-            login.classList.add("hidden");
-            authentication.classList.remove("hidden");
+            hideWindow('login');
+            showWindow(event, 'authentication');
           } else {
             alert("The request failed!");
           }
@@ -203,10 +222,8 @@
             var response = JSON.parse(xhr.response);
             console.log(response);
             if (response["Error"] == null) {
-              var authentication = document.querySelector(".authentication");
-              var dataForm = document.querySelector(".dataForm");
-              authentication.classList.add("hidden");
-              dataForm.classList.remove("hidden");
+              hideWindow('authentication');
+              showWindow(event, 'dataForm');
             } else {
               showError(response["Error"]);
             }
@@ -258,10 +275,8 @@
             var response = JSON.parse(xhr.response);
             console.log(response);
 
-            var subForm = document.querySelector(".subscriptionForm");
-            var dataForm = document.querySelector(".dataForm");
-            dataForm.classList.add("hidden");
-            subForm.classList.remove("hidden");
+            hideWindow('dataForm');
+            showWindow(event, 'subscriptionForm');
 
             let previousPrefAreas=response.CheckedPreferenceAreas;
             let previousNotifications = response.CheckedNotifications;
@@ -343,10 +358,8 @@
 
       function backtoDataForm(e) {
         e.preventDefault();
-        var subForm = document.querySelector(".subscriptionForm");
-        var dataForm = document.querySelector(".dataForm");
-        subForm.classList.add("hidden");
-        dataForm.classList.remove("hidden");
+        hideWindow('subscriptionForm');
+        showWindow(event, 'dataForm');
       }
 
       function subFormSubmit(e) {
@@ -373,10 +386,8 @@
             var response = JSON.parse(xhr.response);
             console.log(response);
             if (response["Error"] == null) {
-              var subForm = document.querySelector(".subscriptionForm");
-              var marketingForm = document.querySelector(".marketingForm");
-              marketingForm.classList.remove("hidden");
-              subForm.classList.add("hidden");
+              hideWindow('subscriptionForm');
+              showWindow(event, 'marketingForm');
               
             } else {
               showError(response["Error"]);
@@ -400,12 +411,31 @@
         xhr.send();
       }
 
+      function unsubscribe(){
+        hideWindow('subscriptionForm');
+        showWindow(event, 'thankYou');
+        var page = "unsubscribe";
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            
+          } else {
+            alert("The request failed!");
+          }
+        };
+        xhr.open(
+          "POST",
+          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
+            page
+        );
+        xhr.send();
+
+      }
+
       function subMarketingConsents(e){
         e.preventDefault();
-        var thankYou = document.querySelector(".thankYou");
-        var marketingForm = document.querySelector(".marketingForm");
-        marketingForm.classList.add("hidden");
-        thankYou.classList.remove("hidden");
+        hideWindow('marketingForm');
+        showWindow(event, 'thankYou');
 
       }
 
@@ -416,8 +446,17 @@
         errorTxt.innerHTML = err;
       }
 
-      function hideErrorWindow() {
+/*      function hideErrorWindow() {
         document.getElementById("errorWindow").classList.add('hidden');
+      }*/
+      function hideWindow(id) {
+        console.log('hide window');
+        document.getElementById(id).classList.add('hidden');
+      }
+      function showWindow(e, id) {
+        console.log('unsub');
+        e.preventDefault();
+        document.getElementById(id).classList.remove('hidden');
       }
     </script>
   </body>
