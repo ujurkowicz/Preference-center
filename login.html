@@ -13,7 +13,7 @@
         <form id="form1" method="post">
           <fieldset>
             <label for="Email Address">Email Address</label>
-            <input type="email" name="EmailAddress" required />
+            <input id="emailInput" type="email" name="EmailAddress" required />
           </fieldset>
           <input name="submitted" type="hidden" value="true" />
           <button type="submit">Next</button>
@@ -28,14 +28,19 @@
         <a style="cursor: pointer" onclick="hideErrorWindow()">X</a>
       </div>
       <h1>AUTHENTICATION</h1>
-      <p></p>
+      <div class="authInfo">
+        <p id="authText"></p>
+      </div>
       <form id="form2" method="post">
         <fieldset>
           <label for="VerificationCode">Verification code</label>
           <input id="token" type="number" name="VerificationCode" required />
         </fieldset>
         <input name="submitted" type="hidden" value="true" />
-        <button type="submit">Next</button>
+        <div class="btns-container">
+          <button id="authBackBtn">Back</button>
+          <button type="submit">Next</button>
+        </div>
       </form>
     </div>
 
@@ -94,7 +99,10 @@
           </select>
         </fieldset>
         <input name="submitted" type="hidden" value="true" />
-        <button type="submit">Next</button>
+        <div class="btns-container">
+          <button id="dataFormBackBtn">Back</button>
+          <button type="submit">Next</button>
+        </div>
       </form>
     </div>
 
@@ -158,6 +166,21 @@
         document.getElementById("loading-background").style.display = "none";  
         document.getElementById("spinner-background").style.display = "none"; 
       }
+
+      document.getElementById('authBackBtn').addEventListener('click', () => {
+        const authentication = document.querySelector(".authentication");
+        const login = document.querySelector(".login");
+        authentication.classList.add("hidden");
+        login.classList.remove("hidden");
+      });
+
+      document.getElementById('dataFormBackBtn').addEventListener('click', () => {
+        const dataForm = document.querySelector(".dataForm");
+        const login = document.querySelector(".login");
+        dataForm.classList.add("hidden");
+        login.classList.remove("hidden");
+      });
+
   
       let form1 = document.querySelector("#form1");
       form1.addEventListener("submit", emailSubmit, false);
@@ -193,6 +216,9 @@
             var login = document.querySelector(".login");
             login.classList.add("hidden");
             authentication.classList.remove("hidden");
+            let email = document.getElementById("emailInput").value;
+            let authText = document.getElementById("authText");
+            authText.textContent=`The verification code has been sent to ${email}`;
           } else {
             alert("The request failed!");
           }
