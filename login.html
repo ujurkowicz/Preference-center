@@ -412,13 +412,14 @@
       }
 
       function unsubscribe(){
-        hideWindow('subscriptionForm');
-        showWindow(event, 'thankYou');
         var page = "unsubscribe";
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
-            
+            hideWindow('subscriptionForm');
+            showWindow(event, 'thankYou');
+            var response = JSON.parse(xhr.response);
+            console.log(response);
           } else {
             alert("The request failed!");
           }
@@ -426,7 +427,11 @@
         xhr.open(
           "POST",
           "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
-            page
+            page +
+            "&SubscriberKey=" +
+            subscriberKey +
+            "&EmailAddress=" +
+            email.value
         );
         xhr.send();
 

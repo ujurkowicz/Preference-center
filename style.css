@@ -222,8 +222,5 @@ input[type="button"] {
 input[type="button"]:hover{
   background: #ccc;
 }
-input[type="button"]:disabled:hover{
-  background: #ddd;
-  cursor: default;
-}
+
       

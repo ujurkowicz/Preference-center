@@ -134,17 +134,22 @@
         ENDIF
         set @prefAreasIds = RequestParameter('prefAreasIds')
         set @notificationsIds = RequestParameter('notificationsIds')
-        
-
+    ELSEIF (@page=='unsubscribe') THEN
+        set @subscriberKey = RequestParameter('SubscriberKey')
+        set @emailAddress = RequestParameter('EmailAddress')
+        UpsertDE(@MDE,1,"SubscriberKey", @subscriberKey, 
+        'Status', false);
 
     ENDIF
 
 ]%%
 <script type="text/javascript" runat="server">
-    Platform.Load("core", "1");
+    Platform.Load("Core", "1.1.1");
     var PREFERENCE_AREAS_DE_EK = 'A8AAE3B1-9927-477E-AFC5-51D98774F723';
     var NOTIFICATIONS_DE_EK = 'FE5B10AD-4155-4087-99CF-3B2D932C8F56';
     var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
+    var LID = '241';
+    var MID = '510007705';
     
 
             
@@ -174,6 +179,29 @@
         addNewRows("PreferenceArea");
         addNewRows("Notification");
         consentsDE.Rows.Add(consents);
+    }
+    if (page=='unsubscribe') {
+       
+            var prox = new Script.Util.WSProxy();
+        
+            /* Set ClientID */
+            prox.setClientId({ "ID": MID}); //Impersonates the BU
+        
+            unsubscribe(email);
+            unsubscribe(subscriberKey);
+            
+       /* } catch(e) {
+            var error = Platform.Function.Stringify(e);
+        }*/
+    }
+    function unsubscribe(subkey) {
+        var props = [
+            { Name: "SubscriberKey", Value: subkey },
+            { Name: "ListID", Value: LID },
+            { Name: "Reason", Value: "WSProxy one click unsubscribe" }
+             ];
+         var data = prox.execute(props, "LogUnsubEvent");
+         var unsubStatus = Platform.Function.Stringify(data);
     }
     function addNewRows(type){
         if (type=="PreferenceArea") {
@@ -233,7 +261,8 @@
         CheckedNotifications: previousNotifications,
         ChosenPrefAreasIds: chosenPrefAreasIds,
         ChosenNotificationIds: chosenNotificationIds,
-        TriggerSend: statusCode
+        TriggerSend: statusCode,
+        UsubStatus: unsubStatus
         }
     stringifiedResult = Stringify(result);
           
