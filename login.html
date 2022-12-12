@@ -3,7 +3,7 @@
     <title>Preference Center</title>
     <link
       rel="stylesheet"
-      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgrs"
+      href="https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/0pjgty5bdgr"
     />
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   </head>
@@ -184,17 +184,17 @@
       }
 
       document.getElementById('authBackBtn').addEventListener('click', () => {
-        const authentication = document.querySelector(".authentication");
-        const login = document.querySelector(".login");
-        authentication.classList.add("hidden");
-        login.classList.remove("hidden");
+        hideWindow('authentication');
+        showWindow(event, 'login');
       });
 
       document.getElementById('dataFormBackBtn').addEventListener('click', () => {
-        const dataForm = document.querySelector(".dataForm");
+  /*      const dataForm = document.querySelector(".dataForm");
         const login = document.querySelector(".login");
         dataForm.classList.add("hidden");
-        login.classList.remove("hidden");
+        login.classList.remove("hidden");*/
+        hideWindow('dataForm');
+        showWindow(event, 'login');
       });
 
   
@@ -238,7 +238,7 @@
             var response = JSON.parse(xhr.response);
             console.log(response);
 
-            //let email = document.getElementById("emailInput").value;
+            let email = document.getElementById("emailInput").value;
             let authText = document.getElementById("authText");
             authText.textContent=`The verification code has been sent to ${email}`;
 
