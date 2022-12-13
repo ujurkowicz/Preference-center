@@ -155,7 +155,10 @@
           <input type="checkbox" id="marketingConsent2" name="marketingConsent2" value="marketingConsent2" required style="display: inline-block; margin-top: 7px;">
           <label for="marketingConsent2">I consent to the processing of my personal data (to the extent described in the Privacy Notice) for direct marketing purposes. <span class="required">*</span></label></label><br>
         </div>
-        <button type="submit">Next</button>
+        <div class="btns-container">
+          <button id="marketingConsentBackBtn">Back</button>
+          <button type="submit">Next</button>
+        </div>
       </form>
     </div>
 
@@ -206,6 +209,10 @@
         hideWindow('dataForm');
         showWindow(event, 'login');
       });
+      document.getElementById('marketingConsentBackBtn').addEventListener('click', () => {
+        hideWindow('marketingForm');
+        showWindow(event, 'subscriptionForm');
+      })
 
   
       let form1 = document.querySelector("#form1");
