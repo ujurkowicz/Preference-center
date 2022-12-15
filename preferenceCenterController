@@ -17,6 +17,15 @@
     /*set @subscriberKey = '0037Q00000UvtC6QAJ'*/
     /*set @subscriberKey = AttributeValue('_subscriberkey')*/
     set @page=RequestParameter('page')
+
+   /* IF (@page == 'onload') THEN
+        set @token = @token
+        set @expirationDate = Lookup(@TOKEN_DE, "ExpirationDate", "Token", @token)
+        IF EMPTY(@token) OR @expirationDate< SystemDateToLocalDate(NOW()) THEN
+            set @page = 'login'
+        ELSE 
+            set @page='dataForm'
+        ENDIF*/
       
     IF (@page=='login') THEN
         set @emailAddress=RequestParameter('EmailAddress')
@@ -150,14 +159,23 @@
     var CONSENTS_DE_EK = '8A43B803-C8CD-46CB-9A88-5A4A0CA0102A';
     var LID = '241';
     var MID = '510007705';
-    
-
             
     var page = Variable.GetValue("@page");
-    var token = Variable.GetValue("@token");
+    //var token = Variable.GetValue("@token");
     var error = Variable.GetValue("@error");
     var email = Variable.GetValue("@emailAddress");
     var subscriberKey = Variable.GetValue("@subscriberKey");
+
+   /* if (page=='onload') {
+        var token =  Platform.Request.GetCookieValue('userlg') 
+        Platform.Variable.SetValue("@token", token);
+    }*/
+
+    if (page=='login') {
+        var expirationDate = Platform.Variable.GetValue("@expirationDate");
+        var token = Platform.Variable.GetValue("@token");
+        Platform.Response.SetCookie("userlg", token, expirationDate, true);
+    }
 
     if (page=='dataForm' || page=='subscriptionForm') {
         var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
