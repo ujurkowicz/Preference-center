@@ -1,10 +1,11 @@
 %%[
-
+/* ----------------------------------------------------------------------- */
+/* -----------------------------GLOBAL VARIABLES ------------------------- */
+/* ----------------------------------------------------------------------- */
     set @TOKEN_DE = 'ENT.Verification Tokens'
     set @MDE = 'ENT.MDE'
     set @PREFERENCE_AREAS_DE= 'ENT.Preference Areas'
     set @CONSENTS_DE = 'ENT.Consents'
-
     set @TRIGGER_SEND_DEF = "160303"
       
     var @page,
@@ -14,66 +15,52 @@
     var @isUsed,
     var @subscriberKey
 
-    /*set @subscriberKey = '0037Q00000UvtC6QAJ'*/
-    /*set @subscriberKey = AttributeValue('_subscriberkey')*/
     set @page=RequestParameter('page')
 
-   /* IF (@page == 'onload') THEN
-        set @token = @token
-        set @expirationDate = Lookup(@TOKEN_DE, "ExpirationDate", "Token", @token)
-        IF EMPTY(@token) OR @expirationDate< SystemDateToLocalDate(NOW()) THEN
-            set @page = 'login'
-        ELSE 
-            set @page='dataForm'
-        ENDIF*/
-      
+/* ----------------------------------------------------------------------- */
+/* --------------------------------LOGIN---------------------------------- */
+/* ----------------------------------------------------------------------- */    
     IF (@page=='login') THEN
+        /*Generate token*/
         set @emailAddress=RequestParameter('EmailAddress')
         set @token=random(100000,999999)
         set @expirationDate=DateAdd(Now(), 1, "H")
         set @isUsed=False
         UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "Token", @token, "ExpirationDate", @expirationDate, "IsUsed", @isUsed)
+        
         /*Trigger Send */
-        VAR @ts, @tsDef, @ts_sub, @ts_statusCode, @ts_statusMsg, @errorCode
-        SET @ts = CreateObject("TriggeredSend")
-        SET @tsDef = CreateObject("TriggeredSendDefinition")
+        var @ts, @tsDef, @ts_sub, @ts_statusCode, @ts_statusMsg, @errorCode
+        set @ts = CreateObject("TriggeredSend")
+        set @tsDef = CreateObject("TriggeredSendDefinition")
         SetObjectProperty(@tsDef, "CustomerKey", @TRIGGER_SEND_DEF)
         SetObjectProperty(@ts, "TriggeredSendDefinition", @tsDef)
-
-        SET @ts_sub = CreateObject("Subscriber")
+        set @ts_sub = CreateObject("Subscriber")
         SetObjectProperty(@ts_sub, "EmailAddress", @emailAddress)
         SetObjectProperty(@ts_sub, "SubscriberKey", @emailAddress)
         AddObjectArrayItem(@ts, "Subscribers", @ts_sub)
-        
-        SET @ts_statusCode = InvokeCreate(@ts, @ts_statusMsg, @errorCode)
+        set @ts_statusCode = InvokeCreate(@ts, @ts_statusMsg, @errorCode)
 
-
-      
+/* ----------------------------------------------------------------------- */
+/* ---------------------------AUTHENTICATION------------------------------ */
+/* ----------------------------------------------------------------------- */    
     ELSEIF (@page=='authentication') THEN
         var  @rows,  @rowCount, @row, @error
-
         set @emailAddress=RequestParameter('EmailAddress')
         set @rows = LookupRows(@TOKEN_DE,"EmailAddress", @emailAddress)
         set @rowCount = rowCount(@rows)
 
-        IF @rowCount > 0 THEN
-
-            /*sprawdz token i czy wazny i czy nie zuzyty*/   
-
+        /*Check if token is valid, has been already used or after expiration date*/
+        IF @rowCount > 0 THEN 
             set @row = row(@rows, 1)
             set @token = field(@row, "Token")
-
             IF (RequestParameter("token") == @token) THEN
                 set @expirationDate = field(@row, "ExpirationDate")
-
                 IF (Now() <= @expirationDate) THEN
                     set @isUsed = field(@row, "isUsed")
-
                     IF (@isUsed == False) THEN 
                         UpsertDE(@TOKEN_DE,1,"EmailAddress", @emailAddress, "IsUsed", "True")
-
                     ELSE
-                           set @error= 'The verification code has been used'
+                        set @error= 'The verification code has been used'
                     ENDIF
                 ELSE 
                     set @error = 'The verification code has expired'
@@ -84,11 +71,12 @@
         ELSE 
             set @error = 'No email provided'
         ENDIF
-    ELSEIF (@page=='dataForm') THEN
-        /*set @subscriberKey = AttributeValue('_subscriberkey')*/
-    /*UKC-003C*/
-        var @firstName, @lastName, @country, @phone, @region
 
+/* ----------------------------------------------------------------------- */
+/* -------------------------------DATA FORM------------------------------- */
+/* ----------------------------------------------------------------------- */   
+    ELSEIF (@page=='dataForm') THEN
+        var @firstName, @lastName, @country, @phone, @region
         set @emailAddress = RequestParameter('EmailAddress')
         set @firstName = RequestParameter('firstName')
         set @lastName = RequestParameter('lastName')
@@ -102,9 +90,6 @@
         set @universityRows = LookupRows(@MDE, 'UniversityEmail', @emailAddress)
 
         IF (rowcount(@personalRows)==0 AND rowcount(@workRows)==0 AND rowcount(@universityRows)==0) THEN
-       /* IF (@subscriberKey == '') THEN
-            set @subscriberKey = RequestParameter('SubscriberKey')
-            IF (@subscriberKey == 'undefined') THEN*/
                 /*CREATE SALESFORCE CONTACT, TAKE ITS ID AS SUBSCRIBERKEY IN MDE*/
                 set @subscriberKey = CreateSalesforceObject (
                     "Contact", 3,
@@ -127,22 +112,21 @@
                 set @subscriberKey=field(@urow, "SubscriberKey")
             ENDIF
             /*UPSERT MDE*/
-            
             UpsertDE(@MDE,1,"SubscriberKey", @subscriberKey, 
             'FirstName', @firstName, 'LastName', @lastName, 'Country', @country, 'Phone', @phone, 'Region', @region)
         ENDIF
-       /* ENDIF*/
-        
 
-
+/* ----------------------------------------------------------------------- */
+/* ---------------------------SUBSCRIPTION FORM--------------------------- */
+/* ----------------------------------------------------------------------- */ 
     ELSEIF (@page=='subscriptionForm') THEN
-        /*UKC -004*/
         set @subscriberKey = RequestParameter('SubscriberKey')
         IF (@subscriberKey == 'undefined') THEN
             set @error = 'No subscriber key provided'
         ENDIF
         set @prefAreasIds = RequestParameter('prefAreasIds')
         set @notificationsIds = RequestParameter('notificationsIds')
+
     ELSEIF (@page=='unsubscribe') THEN
         set @subscriberKey = RequestParameter('SubscriberKey')
         set @emailAddress = RequestParameter('EmailAddress')
@@ -161,32 +145,38 @@
     var MID = '510007705';
             
     var page = Variable.GetValue("@page");
-    //var token = Variable.GetValue("@token");
     var error = Variable.GetValue("@error");
     var email = Variable.GetValue("@emailAddress");
     var subscriberKey = Variable.GetValue("@subscriberKey");
-
-   /* if (page=='onload') {
-        var token =  Platform.Request.GetCookieValue('userlg') 
-        Platform.Variable.SetValue("@token", token);
-    }*/
+    var statusCode=Variable.GetValue("@errorCode")
 
     if (page=='login') {
-        var expirationDate = Platform.Variable.GetValue("@expirationDate");
-        var token = Platform.Variable.GetValue("@token");
-        Platform.Response.SetCookie("userlg", token, expirationDate, true);
+        try{
+            var expirationDate = Platform.Variable.GetValue("@expirationDate");
+            var token = Platform.Variable.GetValue("@token");
+            Platform.Response.SetCookie("userlg", token, expirationDate, true);
+        }
+        catch(e) {
+            var error = Platform.Function.Stringify(e);
+        }
     }
 
     if (page=='dataForm' || page=='subscriptionForm') {
-        var consentsDE = DataExtension.Init(CONSENTS_DE_EK);
-        var preferenceAreasDE = DataExtension.Init(PREFERENCE_AREAS_DE_EK);
-        var preferenceAreas = preferenceAreasDE.Rows.Retrieve();
-        var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
-        var notifications = notificationsDE.Rows.Retrieve();
-        var previousPreferenceAreas = getCheckedConsents("PreferenceArea");
-        var previousNotifications = getCheckedConsents("Notification");
-        
+        var consentsDE, preferenceAreas, notifications, previousPreferenceAreas, previousNotifications;
+        try {
+            consentsDE = DataExtension.Init(CONSENTS_DE_EK);
+            var preferenceAreasDE = DataExtension.Init(PREFERENCE_AREAS_DE_EK);
+            var notificationsDE = DataExtension.Init(NOTIFICATIONS_DE_EK);
+            preferenceAreas = preferenceAreasDE.Rows.Retrieve();
+            notifications = notificationsDE.Rows.Retrieve();
+            previousPreferenceAreas = getCheckedConsents("PreferenceArea");
+            previousNotifications = getCheckedConsents("Notification");
+        }
+        catch(e) {
+            var error = Platform.Function.Stringify(e);
+        }
     }
+
     if (page=='subscriptionForm') {
         var chosenPrefAreasIds = Variable.GetValue("@prefAreasIds").split(',');
         var chosenNotificationIds = Variable.GetValue("@notificationsIds").split(',');
@@ -198,29 +188,35 @@
         addNewRows("Notification");
         consentsDE.Rows.Add(consents);
     }
+
     if (page=='unsubscribe') {
-       
-            var prox = new Script.Util.WSProxy();
-        
-            /* Set ClientID */
-            prox.setClientId({ "ID": MID}); //Impersonates the BU
-        
+        var prox = new Script.Util.WSProxy();
+        /* Set ClientID */
+        prox.setClientId({ "ID": MID}); //Impersonates the BU
+        try{
             unsubscribe(email);
             unsubscribe(subscriberKey);
-            
-       /* } catch(e) {
+        }
+        catch(e) {
             var error = Platform.Function.Stringify(e);
-        }*/
+        }
     }
+
     function unsubscribe(subkey) {
         var props = [
             { Name: "SubscriberKey", Value: subkey },
             { Name: "ListID", Value: LID },
             { Name: "Reason", Value: "WSProxy one click unsubscribe" }
              ];
-         var data = prox.execute(props, "LogUnsubEvent");
-         var unsubStatus = Platform.Function.Stringify(data);
+        try {
+            var data = prox.execute(props, "LogUnsubEvent");
+            var unsubStatus = Platform.Function.Stringify(data);
+        }
+        catch(e) {
+            var error = Platform.Function.Stringify(e);
+        }
     }
+
     function addNewRows(type){
         if (type=="PreferenceArea") {
             for (var i=0; i<chosenPrefAreasIds.length;i++) {
@@ -247,14 +243,11 @@
     }
 
     function getCheckedConsents(assetType){
-        
-
         var filter1 = {
             Property: "SubscriberKey",
             SimpleOperator: "equals",
             Value: subscriberKey
         }
-        
         var complexFilter = {
             LeftOperand: filter1,
             LogicalOperator: "AND",
@@ -266,7 +259,7 @@
         }
         return consentsDE.Rows.Retrieve(complexFilter);
     }
-    var statusCode=Variable.GetValue("@errorCode")
+
     var result= { 
         Page: page,
         Token: token,
@@ -281,7 +274,6 @@
         ChosenNotificationIds: chosenNotificationIds,
         TriggerSend: statusCode,
         UsubStatus: unsubStatus
-
         }
     stringifiedResult = Stringify(result);
           

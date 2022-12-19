@@ -7,16 +7,18 @@
     />
   </head>
   <body>
+    <!-- ERROR WINDOW  -->
+    <div id="ajaxErrorWindow" class="hidden errorWindow">
+      <p class="errorTxt">Error has occured</p>
+      <a style="cursor: pointer" onclick="hideWindow('ajaxErrorWindow')">X</a>
+    </div>
     <!-- LOGIN  -->
     <div id="login">
       <h1>LOG IN</h1>
       <div class="container">
         <form id="form1" method="post">
-          <fieldset>
-
             <label for="Email Address">Email Address</label>
             <input id="emailInput" type="email" name="EmailAddress" required />
-          </fieldset>
           <input name="submitted" type="hidden" value="true" />
           <button type="submit">Next</button>
         </form>
@@ -30,16 +32,12 @@
         <a style="cursor: pointer" onclick="hideWindow('errorWindow')">X</a>
       </div>
       <h1>AUTHENTICATION</h1>
-
       <div class="authInfo">
         <p id="authText"></p>
       </div>
-
       <form id="form2" method="post">
-        <fieldset>
           <label for="VerificationCode">Verification code</label>
           <input id="token" type="number" name="VerificationCode" required />
-        </fieldset>
         <input name="submitted" type="hidden" value="true" />
         <div class="btns-container">
           <button id="authBackBtn">Back</button>
@@ -51,26 +49,15 @@
     <!--PERSONAL DATA FORM -->
     <div id="dataForm" class="hidden">
       <h1>PERSONAL DATA FORM</h1>
-
       <form id="form3" method="post">
-        <fieldset>
           <label for="FirstName">First Name*</label>
           <input type="text" name="FirstName" id="fname" required />
-        </fieldset>
-
-        <fieldset>
           <label for="LastName">Last Name*</label>
           <input type="text" name="LastName" id="lname" required />
-        </fieldset>
-
-        <fieldset>
           <label for="Phone">Phone</label>
           <input type="tel" id="Phone" name="Phone" pattern="[+0-9]{9,13}"
           oninvalid="this.setCustomValidity('Enter a phone number')"
           oninput="this.setCustomValidity('')">
-        </fieldset>
-
-        <fieldset>
           <label for="Country" id="country">Country*</label>
           <select name="Country" onchange="getCountry()">
             <option value="anglia">England</option>
@@ -79,8 +66,6 @@
             <option value="polska">Poland</option>
             <option value="usa">USA</option>
           </select>
-        </fieldset>
-
         <fieldset class="hidden region">
           <label for="Region">Region</label>
           <select name="Region">
@@ -171,7 +156,6 @@
     <!--SPINNER-->
     <div id="loading-background" class="loading-background">
     </div>
-
     <div class="spinner-container">
       <div id="spinner-background" class="spinner-background">
         <div class="lds-ring">
@@ -183,31 +167,7 @@
     <script type="text/javascript">
       window.onload = function(e) {
         e.preventDefault();
-        /*var page = "onload";
-        var xhr = new XMLHttpRequest();
-        showSpinner();
-        xhr.onload = function () {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            var response = JSON.parse(xhr.response);
-            console.log(response.page);
-            if (response.page='authentication') {
-              showWindow(event, 'authentication');
-              hideWindow('login');
-            }*/
-
-            hideSpinner();
-
-         /* } else {
-            alert("The request failed!");
-            hideSpinner();
-          }
-        };
-        xhr.open(
-          "POST",
-          "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
-            page
-        );
-        xhr.send();*/
+        hideSpinner();
       }
 
       function showSpinner() {
@@ -226,19 +186,15 @@
       });
 
       document.getElementById('dataFormBackBtn').addEventListener('click', () => {
-  /*      const dataForm = document.querySelector(".dataForm");
-        const login = document.querySelector(".login");
-        dataForm.classList.add("hidden");
-        login.classList.remove("hidden");*/
         hideWindow('dataForm');
         showWindow(event, 'login');
       });
+
       document.getElementById('marketingConsentBackBtn').addEventListener('click', () => {
         hideWindow('marketingForm');
         showWindow(event, 'subscriptionForm');
       })
 
-  
       let form1 = document.querySelector("#form1");
       form1.addEventListener("submit", emailSubmit, false);
 
@@ -271,15 +227,12 @@
 
       function emailSubmit(e) {
         e.preventDefault();
-        console.log(email.value);
         var page = "login";
         var xhr = new XMLHttpRequest();
         showSpinner();
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
             var response = JSON.parse(xhr.response);
-            console.log(response);
-
             let email = document.getElementById("emailInput").value;
             let authText = document.getElementById("authText");
             authText.textContent=`The verification code has been sent to ${email}`;
@@ -289,7 +242,8 @@
             hideSpinner();
 
           } else {
-            alert("The request failed!");
+            let error=xhr.status+' '+xhr.statusText;
+            showError(error);
             hideSpinner();
           }
         };
@@ -306,14 +260,12 @@
       function tokenSubmit(e) {
         e.preventDefault();
         var token = document.querySelector("#token");
-        console.log(token.value);
         var page = "authentication";
         var xhr = new XMLHttpRequest();
         showSpinner();
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
             var response = JSON.parse(xhr.response);
-            console.log(response);
             if (response["Error"] == null) {
               hideWindow('authentication');
               showWindow(event, 'dataForm');
@@ -323,7 +275,8 @@
               hideSpinner();
             }
           } else {
-            alert("The request failed!");
+            let error=xhr.status+' '+xhr.statusText;
+            showError(error);
             hideSpinner();
           }
         };
@@ -360,35 +313,28 @@
         var phone = document.querySelector("input[type=tel]").value;
         let region = document.querySelector(".region").value;
         region = region == undefined ? "" : region;
-        console.log("Firstname " + firstName);
-        console.log("Lastname " + lastName);
-        console.log("Phone " + phone);
-        console.log("Country " + country);
-        console.log("Region " + region);
         showSpinner();
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
-            var response = JSON.parse(xhr.response);
-            console.log(response);
+            let response = JSON.parse(xhr.response);
+            let previousPrefAreas=response.CheckedPreferenceAreas;
+            let previousNotifications = response.CheckedNotifications;
+            subscriberKey=response.SubscriberKey;
 
             hideWindow('dataForm');
             showWindow(event, 'subscriptionForm');
-
-            let previousPrefAreas=response.CheckedPreferenceAreas;
-            let previousNotifications = response.CheckedNotifications;
             showPreferences(response.PreferenceAreas, previousPrefAreas);
             showNotifications(response.Notifications, previousNotifications);
-            subscriberKey=response.SubscriberKey;
-            console.log(subscriberKey);
             hideSpinner();
           } else {
-            alert("The request failed!");
+            let error=xhr.status+' '+xhr.statusText;
+            showError(error);
             hideSpinner();
           }
         };
         xhr.open(
-          "GET",
+          "POST",
           "https://mc4ysf601b734wwpkwz81pbkx1p0.pub.sfmc-content.com/xvbwhkqetqp?page=" +
             page +
             "&firstName=" +
@@ -417,11 +363,8 @@
           let pref = "pref"+(i+1).toString();
           let checked=false;
           for (let j=0; j<checkedPrefArr.length; j++) {
-            console.log('in checked array');
-            console.log(checkedPrefArr[j].AreaId);
             if (prefArr[i].Id==checkedPrefArr[j].AreaId) {
                checked = true;
-               console.log('consent found');
               break;
             }
           }
@@ -436,15 +379,12 @@
         let notifications = document.querySelector('.notifications');
         notifications.innerHTML='';
         for (let i=0; i<notArr.length; i++) {
-          console.log('in notification arr');
           let notId='n'+notArr[i].Id;
           let not="not"+(i+1).toString();
           let checked=false;
           for (let j=0; j<checkedNotArr.length; j++) {
-            console.log('in checked array');
             if (notArr[i].Id==checkedNotArr[j].NotificationId) {
                checked = true;
-               console.log('consent found');
               break;
             }
           }
@@ -465,7 +405,6 @@
         e.preventDefault();
         var page = "subscriptionForm";
         var xhr = new XMLHttpRequest();
-        console.log(subscriberKey);
         
         //get checked consents
         let prefAreasIds=[];
@@ -477,13 +416,10 @@
         prefAreas.forEach(el=>prefAreasIds.push(el.id.slice(1)));
         notifications.forEach(el=>notificationsIds.push(el.id.slice(1)));
 
-        console.log(prefAreasIds);
-        console.log(notificationsIds);
         showSpinner();
         xhr.onload = function () {
           if (xhr.status >= 200 && xhr.status < 300) {
             var response = JSON.parse(xhr.response);
-            console.log(response);
             if (response["Error"] == null) {
               hideWindow('subscriptionForm');
               showWindow(event, 'marketingForm');
@@ -494,7 +430,8 @@
             }
 
           } else {
-            alert("The request failed!");
+            let error=xhr.status+' '+xhr.statusText;
+            showError(error);
             hideSpinner();
           }
         };
@@ -521,10 +458,10 @@
             hideWindow('subscriptionForm');
             showWindow(event, 'thankYou');
             var response = JSON.parse(xhr.response);
-            console.log(response);
             hideSpinner();
           } else {
-            alert("The request failed!");
+            let error=xhr.status+' '+xhr.statusText;
+            showError(error);
             hideSpinner();
           }
         };
@@ -555,18 +492,15 @@
         errorTxt.innerHTML = err;
       }
 
-/*      function hideErrorWindow() {
-        document.getElementById("errorWindow").classList.add('hidden');
-      }*/
       function hideWindow(id) {
-        console.log('hide window');
         document.getElementById(id).classList.add('hidden');
       }
+
       function showWindow(e, id) {
-        console.log('unsub');
         e.preventDefault();
         document.getElementById(id).classList.remove('hidden');
       }
+
     </script>
   </body>
 </html>
