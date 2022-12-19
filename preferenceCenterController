@@ -132,7 +132,6 @@
         set @emailAddress = RequestParameter('EmailAddress')
         UpsertDE(@MDE,1,"SubscriberKey", @subscriberKey, 
         'Status', false);
-
     ENDIF
 
 ]%%
@@ -150,8 +149,8 @@
     var subscriberKey = Variable.GetValue("@subscriberKey");
     var statusCode=Variable.GetValue("@errorCode")
 
-    if (page=='login') {
-        try{
+    if (page == 'login') {
+        try {
             var expirationDate = Platform.Variable.GetValue("@expirationDate");
             var token = Platform.Variable.GetValue("@token");
             Platform.Response.SetCookie("userlg", token, expirationDate, true);
@@ -161,7 +160,7 @@
         }
     }
 
-    if (page=='dataForm' || page=='subscriptionForm') {
+    if (page == 'dataForm' || page == 'subscriptionForm') {
         var consentsDE, preferenceAreas, notifications, previousPreferenceAreas, previousNotifications;
         try {
             consentsDE = DataExtension.Init(CONSENTS_DE_EK);
@@ -177,19 +176,19 @@
         }
     }
 
-    if (page=='subscriptionForm') {
+    if (page == 'subscriptionForm') {
         var chosenPrefAreasIds = Variable.GetValue("@prefAreasIds").split(',');
         var chosenNotificationIds = Variable.GetValue("@notificationsIds").split(',');
         
         consentsDE.Rows.Remove(["SubscriberKey"], [subscriberKey]);
 
-        var consents=[];
+        var consents = [];
         addNewRows("PreferenceArea");
         addNewRows("Notification");
         consentsDE.Rows.Add(consents);
     }
 
-    if (page=='unsubscribe') {
+    if (page == 'unsubscribe') {
         var prox = new Script.Util.WSProxy();
         /* Set ClientID */
         prox.setClientId({ "ID": MID}); //Impersonates the BU
@@ -218,9 +217,9 @@
     }
 
     function addNewRows(type){
-        if (type=="PreferenceArea") {
-            for (var i=0; i<chosenPrefAreasIds.length;i++) {
-                var newConsent ={
+        if (type == "PreferenceArea") {
+            for (var i = 0; i < chosenPrefAreasIds.length; i++) {
+                var newConsent = {
                     Id: GUID(),
                     SubscriberKey: subscriberKey,
                     Type: "PreferenceArea",
@@ -229,9 +228,9 @@
                 consents.push(newConsent);
             }
         }
-        else if (type=="Notification") {
-            for (var i=0; i<chosenNotificationIds.length;i++) {
-                var newConsent ={
+        else if (type == "Notification") {
+            for (var i = 0; i < chosenNotificationIds.length; i++) {
+                var newConsent = {
                     Id: GUID(),
                     SubscriberKey: subscriberKey,
                     Type: "Notification",
@@ -260,7 +259,7 @@
         return consentsDE.Rows.Retrieve(complexFilter);
     }
 
-    var result= { 
+    var result = { 
         Page: page,
         Token: token,
         Error: error,

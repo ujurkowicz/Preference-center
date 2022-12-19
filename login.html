@@ -370,8 +370,7 @@
           }
           preferences.innerHTML+=checked?
          `<input type="checkbox" class="pref" id=${prefId} name=${pref} checked/><label for=${prefId}>`+prefArr[i].Asset+'</label><p>'+prefArr[i].Description+'</p>':
-         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Asset+'</label><p>'+prefArr[i].Description+'</p>';
-          
+         `<input type="checkbox" class="pref" id=${prefId} name=${pref} /><label for=${prefId}>`+prefArr[i].Asset+'</label><p>'+prefArr[i].Description+'</p>';          
         }
       }
 
@@ -404,8 +403,7 @@
       function subFormSubmit(e) {
         e.preventDefault();
         var page = "subscriptionForm";
-        var xhr = new XMLHttpRequest();
-        
+        var xhr = new XMLHttpRequest();   
         //get checked consents
         let prefAreasIds=[];
         let notificationsIds=[];
@@ -428,7 +426,6 @@
               showError(response["Error"]);
               hideSpinner();
             }
-
           } else {
             let error=xhr.status+' '+xhr.statusText;
             showError(error);
@@ -475,14 +472,12 @@
             email.value
         );
         xhr.send();
-
       }
 
       function subMarketingConsents(e){
         e.preventDefault();
         hideWindow('marketingForm');
         showWindow(event, 'thankYou');
-
       }
 
       function showError(err) {
