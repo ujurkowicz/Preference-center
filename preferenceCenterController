@@ -132,7 +132,6 @@
         set @emailAddress = RequestParameter('EmailAddress')
         UpsertDE(@MDE,1,"SubscriberKey", @subscriberKey, 
         'Status', false);
-
     ENDIF
 
 ]%%
@@ -150,8 +149,8 @@
     var subscriberKey = Variable.GetValue("@subscriberKey");
     var statusCode=Variable.GetValue("@errorCode")
 
-    if (page=='login') {
-        try{
+    if (page == 'login') {
+        try {
             var expirationDate = Platform.Variable.GetValue("@expirationDate");
             var token = Platform.Variable.GetValue("@token");
             Platform.Response.SetCookie("userlg", token, expirationDate, true);
@@ -161,7 +160,7 @@
         }
     }
 
-    if (page=='dataForm' || page=='subscriptionForm') {
+    if (page == 'dataForm' || page == 'subscriptionForm') {
         var consentsDE, preferenceAreas, notifications, previousPreferenceAreas, previousNotifications;
         try {
             consentsDE = DataExtension.Init(CONSENTS_DE_EK);
@@ -215,7 +214,7 @@
         }
     }
 
-    if (page=='unsubscribe') {
+    if (page == 'unsubscribe') {
         var prox = new Script.Util.WSProxy();
         /* Set ClientID */
         prox.setClientId({ "ID": MID}); //Impersonates the BU
@@ -297,7 +296,7 @@
         return diffArr;
     }
 
-    var result= { 
+    var result = { 
         Page: page,
         Token: token,
         Error: error,
