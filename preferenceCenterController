@@ -176,16 +176,42 @@
         }
     }
 
-    if (page == 'subscriptionForm') {
-        var chosenPrefAreasIds = Variable.GetValue("@prefAreasIds").split(',');
-        var chosenNotificationIds = Variable.GetValue("@notificationsIds").split(',');
-        
-        consentsDE.Rows.Remove(["SubscriberKey"], [subscriberKey]);
+    if (page=='subscriptionForm') {
+        try {
+            var currentPrefAreasStringify = Variable.GetValue("@prefAreasIds");
+            var currentNotificationsStringify = Variable.GetValue("@notificationsIds");
+            
+            var previousPreferenceAreasIds=[];
+            for (i=0; i<previousPreferenceAreas.length; i++) {
+                previousPreferenceAreasIds.push(previousPreferenceAreas[i].AreaId);
+            }
+            
+            var previousNotificationsIds=[];
+            for (i=0; i<previousNotifications.length; i++) {
+                previousNotificationsIds.push(previousNotifications[i].NotificationId);
+            }
+    
+            var currentPrefAreas = currentPrefAreasStringify.split(',');
+            var currentNotifications = currentNotificationsStringify.split(',');
+            
+            var prefAreasToAdd = arrDiff(currentPrefAreas, previousPreferenceAreasIds.toString());
+            var prefAreasToDelete = arrDiff(previousPreferenceAreasIds, currentPrefAreasStringify);
 
-        var consents = [];
-        addNewRows("PreferenceArea");
-        addNewRows("Notification");
-        consentsDE.Rows.Add(consents);
+            notificationsToAdd = arrDiff(currentNotifications, previousNotificationsIds.toString());
+            notificationsToDelete = arrDiff(previousNotificationsIds, currentNotificationsStringify);
+    
+            for (i = 0; i < prefAreasToDelete.length; i++) {
+                consentsDE.Rows.Remove(["SubscriberKey", "AreaId"], [subscriberKey, prefAreasToDelete[i]]);
+            }
+            for (i = 0; i < notificationsToDelete.length; i++) {
+                consentsDE.Rows.Remove(["SubscriberKey", "NotificationId"], [subscriberKey, notificationsToDelete[i]]);
+            }
+            consentsDE.Rows.Add(addNewRows("PreferenceArea"));
+            consentsDE.Rows.Add(addNewRows("Notification"));
+        }
+        catch(e) {
+            var error = Platform.Function.Stringify(e);
+        }
     }
 
     if (page == 'unsubscribe') {
@@ -217,28 +243,30 @@
     }
 
     function addNewRows(type){
-        if (type == "PreferenceArea") {
-            for (var i = 0; i < chosenPrefAreasIds.length; i++) {
-                var newConsent = {
+        var rows=[];
+        if (type=="PreferenceArea") {
+            for (var i=0; i<prefAreasToAdd.length;i++) {
+                var newConsent ={
                     Id: GUID(),
                     SubscriberKey: subscriberKey,
                     Type: "PreferenceArea",
-                    AreaId: chosenPrefAreasIds[i]
+                    AreaId: prefAreasToAdd[i]
                 }
-                consents.push(newConsent);
+                rows.push(newConsent);
             }
         }
-        else if (type == "Notification") {
-            for (var i = 0; i < chosenNotificationIds.length; i++) {
-                var newConsent = {
+        else if (type=="Notification") {
+            for (var i=0; i<notificationsToAdd.length;i++) {
+                var newConsent ={
                     Id: GUID(),
                     SubscriberKey: subscriberKey,
                     Type: "Notification",
-                    NotificationId: chosenNotificationIds[i]
+                    NotificationId: notificationsToAdd[i]
                 }
-                consents.push(newConsent);
+                rows.push(newConsent);
             }
-        } 
+        }
+        return rows; 
     }
 
     function getCheckedConsents(assetType){
@@ -259,6 +287,15 @@
         return consentsDE.Rows.Retrieve(complexFilter);
     }
 
+    /*Find the difference between two arrays*/
+    function arrDiff(arr, stringifyArr){
+        var diffArr=[];
+        for (i = 0; i < arr.length; i++) {
+          if (stringifyArr.indexOf(arr[i]) == -1) diffArr.push(arr[i]);
+        }
+        return diffArr;
+    }
+
     var result = { 
         Page: page,
         Token: token,
@@ -269,8 +306,6 @@
         Notifications: notifications,
         CheckedPreferenceAreas: previousPreferenceAreas,
         CheckedNotifications: previousNotifications,
-        ChosenPrefAreasIds: chosenPrefAreasIds,
-        ChosenNotificationIds: chosenNotificationIds,
         TriggerSend: statusCode,
         UsubStatus: unsubStatus
         }
